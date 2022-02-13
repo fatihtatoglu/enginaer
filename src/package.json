@@ -1,0 +1,20 @@
+{
+  "name": "enginaer",
+  "version": "1.0.0",
+  "description": "A simple web site engine with javascript.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fatihtatoglu/enginaer.git"
+  },
+  "contributors": [
+    "Fatih Tatoğlu <https://github.com/fatihtatoglu>"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fatihtatoglu/enginaer/issues"
+  },
+  "homepage": "https://github.com/fatihtatoglu/enginaer#readme",
+  "devDependencies": {
+    "gulp": "^4.0.2"
+  }
+}
