@@ -4,7 +4,8 @@ author: Fatih Tatoğlu
 description: Yine Mi blog yazmaya başlıyorum?
 date: 2018-07-29T00:00:00.000+03:00
 published: true
-permalink: /2018/07/intro.html
+permalink: ./2018/07/intro.html
+image: ../assets/img/blog.jpg
 tags: intro welcome
 ---
 

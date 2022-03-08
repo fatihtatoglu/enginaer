@@ -3,8 +3,8 @@ layout: post
 author: Fatih Tatoğlu
 description: Geliştirme yaparken kullandığım araçlar, kullandığım teknolojiler veya konseptler, karşılaştığım zorluklar ve bunlara bulduğum doğru veya eksik çözümler
 date: 2020-02-06T00:00:00.000+03:00
-published: true
-permalink: /2020/02/kendime-notlar.html
+published: false
+permalink: ./2020/02/kendime-notlar.html
 tags: kendime_notlar personal_notes
 image: ../assets/img/blank-book.jpg
 ---

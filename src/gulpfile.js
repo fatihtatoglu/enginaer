@@ -50,22 +50,52 @@ function readPages() {
 }
 
 function generateMenu(cb) {
+    var posts = {
+        "title": "Posts",
+        "children": []
+    };
 
-    pages.filter(function (page) {
+    pages.forEach(function (page) {
+
         if (page["layout"] === "page") {
-            return page;
+            var pageMenuItem = {
+                "title": page["title"],
+                "url": page["permalink"],
+                "order": page["order"]
+            };
+
+            if (page["published"] === "false") {
+                pageMenuItem["disabled"] = true;
+                delete pageMenuItem["url"];
+            }
+
+            menuItems.push(pageMenuItem);
         }
-    }).forEach(function (page) {
+        else if (page["layout"] === "post") {
+            var postMenuItem = {
+                "title": page["title"],
+                "url": page["permalink"],
+                "date": page["date"]
+            };
 
-        var menuItem = {};
-        menuItem["title"] = page["title"];
-        menuItem["url"] = page["permalink"];
-        menuItem["order"] = page["order"];
+            if (page["published"] === "false") {
+                postMenuItem["disabled"] = true;
+                delete postMenuItem["url"];
+            }
 
-        menuItems.push(menuItem);
+            posts["children"].push(postMenuItem);
+        }
     });
 
-    menuItems = menuItems.sort(function (a, b) { return a["order"] - b["order"]; });
+    posts["children"] = posts["children"].sort(function (a, b) {
+        return a["date"] - b["date"];
+    });
+
+    menuItems.push(posts);
+
+    menuItems = menuItems.sort(function (a, b) {
+        return a["order"] - b["order"];
+    });
 
     return cb();
 }
@@ -121,13 +151,29 @@ function generataFiles(cb) {
         var permalink = data["permalink"];
         var name = data["name"];
 
-        var outputPath = permalink.replace(name + ".html", "");
+        console.log(permalink);
+        console.log(name);
+
+        var outputPath = "";
+
+        if (permalink.indexOf(name) >= 0) {
+            outputPath = permalink.replace(name + ".html", "");
+        }
+        else
+        {
+            // TODO: Buraya çözüm bul...
+        }
 
         var folderPath = path.resolve(path.join("../dist", outputPath));
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true });
         }
 
+
+        // TODO: dosya adı değil permalink adı olması lazım buna da bir çözüm bul.
+
+        // TODO: menüyü de kontrol etmeyi unutma.
+        
         var filePath = path.join(folderPath, name + ".html");
         fs.writeFileSync(filePath, output);
     });

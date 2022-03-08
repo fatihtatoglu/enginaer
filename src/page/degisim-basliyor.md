@@ -4,7 +4,7 @@ author: Fatih Tatoğlu
 description: Yakın zamanda kişisel ve organizasyon değişim süreçleri ile ilgili iki kitap okudum. Bu kitapları okuduğum zaman aslında bildiğim ama hoşuma gitmeyebilecek değişim etkileriyle nasıl başa çıkılacağını ve değişim aşamalarını gördüm. Kitapları siz de okuduğunuz zaman değişim süreci içinde olup olmadığınızla ilgili değişik bir farkındalık kazanabilirsiniz.
 date: 2018-09-29T00:00:00.000+03:00
 published: true
-permalink: /2018/07/degisim-basliyor.html
+permalink: ./2018/07/books.html
 tags: buzdağımız_eriyor degisim dönüsüm john_kotter kitap_önerisi leading_change peynirimi_kim_kaptı william_pollard
 image: ../assets/img/william_pollard.jpg
 ---
