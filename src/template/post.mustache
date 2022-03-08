@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="{{site-language}}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="{{description}}">
+    <meta name="author" content="{{author}}">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>{{site-title-prefix}}{{title}}</title>
+
+    <link rel="canonical" href="{{& site-url}}">
+
+    <link rel="stylesheet" href="./css/main.css?v=2e77c687679a3b653a6eec5db3c626b7">
+    <script src="./js/mustache.js?v=2e77c687679a3b653a6eec5db3c626b7"></script>
+    <script src="./js/main.js?v=2e77c687679a3b653a6eec5db3c626b7"></script>
+</head>
+
+<body>
+    <header><span class="site-name">{{site-name}}</span></header>
+    <nav id="navigation">
+    {{> _menu}}
+    </nav>
+    <main>
+        <article>
+            {{&content}}
+        </article>
+    </main>
+    <footer>{{> _footer}}</footer>
+</body>
+
+</html>

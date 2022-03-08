@@ -2,7 +2,7 @@
 layout: page
 author: Fatih Tatoğlu
 description: About Page, Turbo C/C++ simple basic web site theme.
-date: 2022-03-07 21:15:18 +0300
+date: 2022-03-07T00:00:00.000+03:00
 published: false
 permalink: about.html
 tags: turbo_c turbo_c++ borland old_school

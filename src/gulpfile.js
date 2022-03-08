@@ -31,35 +31,28 @@ function copyAssets() {
 }
 
 function readPages() {
-    return src(["page/**/*.md"])
+
+    return src("page/**/*.md")
         .pipe(through.obj(function (file, encoding, cb) {
-            if (file.isNull()) {
-                this.push(file);
-                return cb();
-            }
 
-            if (file.isStream()) {
-                cb(new gutil.PluginError("fatih", "Streaming not supported"));
+            if (!fileSanityCheck(file, cb)) {
                 return;
             }
 
-            if (!file.contents) {
-                cb(new gutil.PluginError("fatih", "file 'contents' property is missing."));
-                return;
-            }
+            var filePath = path.parse(file.path);
+
+            var data = {
+                "path": filePath.dir,
+                "base": filePath.base,
+                "name": filePath.name
+            };
 
             var content = file.contents.toString();
-            if (!content.startsWith("---")) {
-                cb(new gutil.PluginError("fatih", "file must start with metadata section."));
-                return;
-            }
-
-            var data = {};
-
-            var metadataEnd = content.indexOf("---", 1);
-            var metadata = content.substring(4, metadataEnd);
-            var markdownContent = content.substring(metadataEnd + 3);
+            var metadataEndIndex = content.indexOf("---", 1);
+            var metadata = content.substring(4, metadataEndIndex);
+            var markdownContent = content.substring(metadataEndIndex + 3);
             var pageContent = marked.parse(markdownContent);
+
             data["content"] = pageContent;
 
             var titleRegex = /<h1>(.*)<\/h1>/g;
@@ -91,39 +84,134 @@ function readPages() {
                 data[key] = value;
             });
 
-            var config = fs.readFileSync("config.json");
-            var configObject = JSON.parse(config.toString());
-            for (const k in configObject) {
-                data[k] = configObject[k];
-            }
-
-            var templatePath = "./template/" + data["layout"] + ".mustache";
-            var template = fs.readFileSync(templatePath);
-            var partials = {};
-            partials["_footer"] = fs.readFileSync("./template/_footer.mustache").toString();
-
-            var output = mustache.render(template.toString(), data, partials);
-
-            // fix headers
-            output = output.replace("<h1>", "<header><h1>");
-            output = output.replace("</h1>", "</h1></header>");
-
-            file.contents = Buffer.from(output);
-            file.path = replaceExt(file.path, ".html");
-
-            if (file.stat) {
-                file.stat.atime = file.stat.mtime = file.stat.ctime = new Date();
-            }
-
-            menuItems.push({
-                "title": data["title"],
-                "url": data["permalink"]
-            });
-
+            data["date"] = new Date(Date.parse(data["date"]));
+            
             cb(null, file);
-        }))
-        .pipe(dest("../dist"));
+        }));
+
 }
+
+function fileSanityCheck(file, cb) {
+    if (file.isNull()) {
+        cb(new gutil.PluginError("fatih", "File is null."));
+        return false;
+    }
+
+    if (file.isStream()) {
+        cb(new gutil.PluginError("fatih", "Streaming not supported."));
+        return false;
+    }
+
+    if (!file.contents) {
+        cb(new gutil.PluginError("fatih", "File 'contents' property is missing."));
+        return false;
+    }
+
+    var content = file.contents.toString();
+    if (!content.startsWith("---")) {
+        cb(new gutil.PluginError("fatih", "File must start with metadata section."));
+        return false;
+    }
+
+    return true;
+}
+
+
+
+// function readPages() {
+//     return src(["page/**/*.md"])
+//         .pipe(through.obj(function (file, encoding, cb) {
+//             if (file.isNull()) {
+//                 this.push(file);
+//                 return cb();
+//             }
+
+//             if (file.isStream()) {
+//                 cb(new gutil.PluginError("fatih", "Streaming not supported"));
+//                 return;
+//             }
+
+//             if (!file.contents) {
+//                 cb(new gutil.PluginError("fatih", "file 'contents' property is missing."));
+//                 return;
+//             }
+
+//             var content = file.contents.toString();
+//             if (!content.startsWith("---")) {
+//                 cb(new gutil.PluginError("fatih", "file must start with metadata section."));
+//                 return;
+//             }
+
+//             var data = {};
+
+//             var metadataEnd = content.indexOf("---", 1);
+//             var metadata = content.substring(4, metadataEnd);
+//             var markdownContent = content.substring(metadataEnd + 3);
+//             var pageContent = marked.parse(markdownContent);
+//             data["content"] = pageContent;
+
+//             var titleRegex = /<h1>(.*)<\/h1>/g;
+//             var titleResult = titleRegex.exec(pageContent);
+//             var title = titleResult[1];
+
+//             data["title"] = title;
+
+//             var pair = metadata.replace("\r", "").split("\n");
+//             pair.forEach(function (item) {
+//                 if (item.lenght === 0) {
+//                     return;
+//                 }
+
+//                 var kvp = item.split(": ");
+//                 var key = kvp[0];
+//                 var value = kvp[1];
+
+//                 if (key === "tags") {
+//                     value = value.split(" ").map(function (v) {
+//                         return v.replace("_", " ");
+//                     });
+//                 }
+
+//                 if (key === "") {
+//                     return;
+//                 }
+
+//                 data[key] = value;
+//             });
+
+//             var config = fs.readFileSync("config.json");
+//             var configObject = JSON.parse(config.toString());
+//             for (const k in configObject) {
+//                 data[k] = configObject[k];
+//             }
+
+//             var templatePath = "./template/" + data["layout"] + ".mustache";
+//             var template = fs.readFileSync(templatePath);
+//             var partials = {};
+//             partials["_footer"] = fs.readFileSync("./template/_footer.mustache").toString();
+
+//             var output = mustache.render(template.toString(), data, partials);
+
+//             // fix headers
+//             output = output.replace("<h1>", "<header><h1>");
+//             output = output.replace("</h1>", "</h1></header>");
+
+//             file.contents = Buffer.from(output);
+//             file.path = replaceExt(file.path, ".html");
+
+//             if (file.stat) {
+//                 file.stat.atime = file.stat.mtime = file.stat.ctime = new Date();
+//             }
+
+//             menuItems.push({
+//                 "title": data["title"],
+//                 "url": data["permalink"]
+//             });
+
+//             cb(null, file);
+//         }))
+//         .pipe(dest("../dist"));
+// }
 
 function readPosts(cb) {
     cb();
@@ -132,7 +220,6 @@ function readPosts(cb) {
 function renderLayout(cb) {
     cb();
 }
-
 
 exports.default = series(
     cleanAll,
