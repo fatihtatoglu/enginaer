@@ -3,9 +3,10 @@ layout: page
 author: Fatih Tatoğlu
 description: Home Page, Turbo C/C++ simple basic web site theme.
 date: 2022-03-07T00:00:00.000+03:00
-published: false
-permalink: home.html
+published: true
+permalink: index.html
 tags: turbo_c turbo_c++ borland old_school
+order: 0
 ---
 
 # Home

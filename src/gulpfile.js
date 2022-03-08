@@ -4,7 +4,6 @@ const gutil = require("gulp-util");
 
 const fs = require("fs");
 const path = require("path");
-const replaceExt = require("replace-ext");
 const through = require("through2");
 
 const mustache = require("mustache");
@@ -18,7 +17,6 @@ marked.setOptions({
 
 var menuItems = [];
 var pages = [];
-var posts = [];
 
 function cleanAll() {
     return src(["../dist"], { allowEmpty: true })
@@ -31,7 +29,6 @@ function copyAssets() {
 }
 
 function readPages() {
-
     return src("page/**/*.md")
         .pipe(through.obj(function (file, encoding, cb) {
 
@@ -39,56 +36,103 @@ function readPages() {
                 return;
             }
 
+            var page = extractMetadata(file);
             var filePath = path.parse(file.path);
 
-            var data = {
-                "path": filePath.dir,
-                "base": filePath.base,
-                "name": filePath.name
-            };
+            page["path"] = filePath.dir;
+            page["base"] = filePath.base;
+            page["name"] = filePath.name;
 
-            var content = file.contents.toString();
-            var metadataEndIndex = content.indexOf("---", 1);
-            var metadata = content.substring(4, metadataEndIndex);
-            var markdownContent = content.substring(metadataEndIndex + 3);
-            var pageContent = marked.parse(markdownContent);
+            pages.push(page);
 
-            data["content"] = pageContent;
-
-            var titleRegex = /<h1>(.*)<\/h1>/g;
-            var titleResult = titleRegex.exec(pageContent);
-            var title = titleResult[1];
-
-            data["title"] = title;
-
-            var pair = metadata.replace("\r", "").split("\n");
-            pair.forEach(function (item) {
-                if (item.lenght === 0) {
-                    return;
-                }
-
-                var kvp = item.split(": ");
-                var key = kvp[0];
-                var value = kvp[1];
-
-                if (key === "tags") {
-                    value = value.split(" ").map(function (v) {
-                        return v.replace("_", " ");
-                    });
-                }
-
-                if (key === "") {
-                    return;
-                }
-
-                data[key] = value;
-            });
-
-            data["date"] = new Date(Date.parse(data["date"]));
-            
             cb(null, file);
         }));
+}
 
+function generateMenu(cb) {
+
+    pages.filter(function (page) {
+        if (page["layout"] === "page") {
+            return page;
+        }
+    }).forEach(function (page) {
+
+        var menuItem = {};
+        menuItem["title"] = page["title"];
+        menuItem["url"] = page["permalink"];
+        menuItem["order"] = page["order"];
+
+        menuItems.push(menuItem);
+    });
+
+    menuItems = menuItems.sort(function (a, b) { return a["order"] - b["order"]; });
+
+    return cb();
+}
+
+function generataFiles(cb) {
+
+    var config = fs.readFileSync("config.json");
+    var configObject = JSON.parse(config.toString());
+
+    var menuData = {
+        menuItems: menuItems,
+        "separator": function () {
+            return this.role === "separator";
+        },
+        "hasChildren": function () {
+            return this.children && this.children.length > 0;
+        },
+        "url": function () {
+            if (this.url) {
+                return this.url;
+            }
+
+            return "javascript:;";
+        }
+    };
+
+    var templatePaths = {};
+
+    var partialsTemplates = {};
+    partialsTemplates["_footer"] = fs.readFileSync("./template/_footer.mustache").toString();
+    partialsTemplates["_menu"] = fs.readFileSync("./template/_menu.mustache").toString();
+
+    pages.forEach(function (page) {
+
+        if (!templatePaths[page["layout"]]) {
+            var templatePath = "./template/" + page["layout"] + ".mustache";
+            templatePaths[page["layout"]] = fs.readFileSync(templatePath).toString();
+        }
+
+        var template = templatePaths[page["layout"]];
+        var data = { ...page, ...menuData, ...configObject };
+        data["base-path"] = path.resolve("../dist/") + "/";
+
+        var output = mustache.render(template, data, partialsTemplates);
+
+        // fix headers
+        output = output.replace("<h1>", "<header><h1>");
+        output = output.replace("</h1>", "</h1></header>");
+
+        // fix image paths
+        output = output.replace(/..\/assets\/img\//g, "./img/");
+
+        var permalink = data["permalink"];
+        var name = data["name"];
+
+        var outputPath = permalink.replace(name + ".html", "");
+
+        var folderPath = path.resolve(path.join("../dist", outputPath));
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true });
+        }
+
+        var filePath = path.join(folderPath, name + ".html");
+        fs.writeFileSync(filePath, output);
+    });
+
+    cb();
 }
 
 function fileSanityCheck(file, cb) {
@@ -116,114 +160,54 @@ function fileSanityCheck(file, cb) {
     return true;
 }
 
+function extractMetadata(file) {
+    var data = {};
 
+    var content = file.contents.toString();
+    var metadataEndIndex = content.indexOf("---", 1);
+    var metadata = content.substring(4, metadataEndIndex);
+    var markdownContent = content.substring(metadataEndIndex + 3);
+    var pageContent = marked.parse(markdownContent);
 
-// function readPages() {
-//     return src(["page/**/*.md"])
-//         .pipe(through.obj(function (file, encoding, cb) {
-//             if (file.isNull()) {
-//                 this.push(file);
-//                 return cb();
-//             }
+    data["content"] = pageContent;
 
-//             if (file.isStream()) {
-//                 cb(new gutil.PluginError("fatih", "Streaming not supported"));
-//                 return;
-//             }
+    var titleRegex = /<h1>(.*)<\/h1>/g;
+    var titleResult = titleRegex.exec(pageContent);
+    var title = titleResult[1];
 
-//             if (!file.contents) {
-//                 cb(new gutil.PluginError("fatih", "file 'contents' property is missing."));
-//                 return;
-//             }
+    data["title"] = title;
 
-//             var content = file.contents.toString();
-//             if (!content.startsWith("---")) {
-//                 cb(new gutil.PluginError("fatih", "file must start with metadata section."));
-//                 return;
-//             }
+    var pair = metadata.replace("\r", "").split("\n");
+    pair.forEach(function (item) {
+        if (item.lenght === 0) {
+            return;
+        }
 
-//             var data = {};
+        var kvp = item.split(": ");
+        var key = kvp[0];
+        var value = kvp[1];
 
-//             var metadataEnd = content.indexOf("---", 1);
-//             var metadata = content.substring(4, metadataEnd);
-//             var markdownContent = content.substring(metadataEnd + 3);
-//             var pageContent = marked.parse(markdownContent);
-//             data["content"] = pageContent;
+        if (key === "tags") {
+            value = value.split(" ").map(function (v) {
+                return v.replace("_", " ");
+            });
+        }
 
-//             var titleRegex = /<h1>(.*)<\/h1>/g;
-//             var titleResult = titleRegex.exec(pageContent);
-//             var title = titleResult[1];
+        if (key === "") {
+            return;
+        }
 
-//             data["title"] = title;
+        data[key] = value;
+    });
 
-//             var pair = metadata.replace("\r", "").split("\n");
-//             pair.forEach(function (item) {
-//                 if (item.lenght === 0) {
-//                     return;
-//                 }
+    data["date"] = new Date(Date.parse(data["date"]));
 
-//                 var kvp = item.split(": ");
-//                 var key = kvp[0];
-//                 var value = kvp[1];
-
-//                 if (key === "tags") {
-//                     value = value.split(" ").map(function (v) {
-//                         return v.replace("_", " ");
-//                     });
-//                 }
-
-//                 if (key === "") {
-//                     return;
-//                 }
-
-//                 data[key] = value;
-//             });
-
-//             var config = fs.readFileSync("config.json");
-//             var configObject = JSON.parse(config.toString());
-//             for (const k in configObject) {
-//                 data[k] = configObject[k];
-//             }
-
-//             var templatePath = "./template/" + data["layout"] + ".mustache";
-//             var template = fs.readFileSync(templatePath);
-//             var partials = {};
-//             partials["_footer"] = fs.readFileSync("./template/_footer.mustache").toString();
-
-//             var output = mustache.render(template.toString(), data, partials);
-
-//             // fix headers
-//             output = output.replace("<h1>", "<header><h1>");
-//             output = output.replace("</h1>", "</h1></header>");
-
-//             file.contents = Buffer.from(output);
-//             file.path = replaceExt(file.path, ".html");
-
-//             if (file.stat) {
-//                 file.stat.atime = file.stat.mtime = file.stat.ctime = new Date();
-//             }
-
-//             menuItems.push({
-//                 "title": data["title"],
-//                 "url": data["permalink"]
-//             });
-
-//             cb(null, file);
-//         }))
-//         .pipe(dest("../dist"));
-// }
-
-function readPosts(cb) {
-    cb();
-}
-
-function renderLayout(cb) {
-    cb();
+    return data;
 }
 
 exports.default = series(
     cleanAll,
-    copyAssets,
-    parallel(readPages, readPosts),
-    renderLayout
+    parallel(copyAssets, readPages),
+    generateMenu,
+    generataFiles
 );
