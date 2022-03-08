@@ -1,0 +1,33 @@
+<ul>
+{{#menuItems}}
+    {{#disabled}}
+    <li class="disabled">
+        <a href="{{url}}">{{title}}</a>
+    </li>
+    {{/disabled}}
+    {{^disabled}}
+    <li>
+        <a href="{{url}}">{{title}}</a>
+        {{#hasChildren}}
+        <div class="sub-menu">
+            <ul>
+                {{#children}}
+                    {{#separator}}
+                    <li role="separator"></li>
+                    {{/separator}}
+                    {{^separator}}
+                        {{#disabled}}
+                        <li class="disabled"><a {{#element-id}}id="{{.}}" {{/element-id}}href="{{url}}">{{title}}</a></li>
+                        {{/disabled}}
+                        {{^disabled}}
+                        <li><a {{#element-id}}id="{{.}}" {{/element-id}}href="{{url}}">{{title}}</a></li>
+                        {{/disabled}}
+                    {{/separator}}
+                {{/children}}
+        </ul>
+        </div>
+        {{/hasChildren}}
+    </li>
+    {{/disabled}}
+{{/menuItems}}
+</ul>

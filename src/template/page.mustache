@@ -9,9 +9,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
 
-    <title>{{site-title}}</title>
+    <title>{{site-title-prefix}}{{title}}</title>
 
-    <link rel="canonical" href="{{site-url}}">
+    <link rel="canonical" href="{{& site-url}}">
 
     <link rel="stylesheet" href="./css/main.css?v=2e77c687679a3b653a6eec5db3c626b7">
     <script src="./js/mustache.js?v=2e77c687679a3b653a6eec5db3c626b7"></script>
@@ -21,15 +21,14 @@
 <body>
     <header><span class="site-name">{{site-name}}</span></header>
     <nav id="navigation">
-
+    {{> _menu}}
     </nav>
     <main>
         <article>
             {{&content}}
         </article>
     </main>
-    <footer><span class="credits">By <a href="https://github.com/fatihtatoglu" target="_new" rel="external"
-                title="Developed by Fatih Tatoğlu">Fatih Tatoğlu</a> - 2022</span></footer>
+    <footer>{{> _footer}}</footer>
 </body>
 
 </html>
