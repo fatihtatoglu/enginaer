@@ -63,6 +63,8 @@ class Enginær {
 
                 that.#templateMap[key] = fs.readFileSync(templatePath).toString();
             });
+
+            console.log("🤔 templates has been loaded.");
         }
 
         return this.#templateMap;
@@ -72,6 +74,8 @@ class Enginær {
         if (this.#configMap === null) {
             var config = fs.readFileSync(this.#configPath);
             this.#configMap = JSON.parse(config.toString());
+
+            console.log("🤔 config has been loaded.");
         }
 
         return this.#configMap;
@@ -93,6 +97,8 @@ class Enginær {
             page["name"] = filePath.name;
 
             that.#addPage(page);
+
+            console.log("🤓 read pages: ", page["name"]);
 
             cb(null, file);
         });
@@ -119,6 +125,8 @@ class Enginær {
                     delete pageMenuItem["url"];
                 }
 
+                console.log("🆗 generate menu:", pageMenuItem["title"]);
+
                 that.#addMenuItem(pageMenuItem);
             }
             else if (page["layout"] === "post") {
@@ -134,6 +142,8 @@ class Enginær {
                 }
 
                 posts["children"].push(postMenuItem);
+
+                console.log("🆗 generate menu:", postMenuItem["title"]);
             }
         });
 
@@ -144,8 +154,8 @@ class Enginær {
         this.#addMenuItem(posts);
     }
 
-    generateFiles() {
-        var outputBasePath = "../dist/";
+    generateFiles(outputPath) {
+        var outputBasePath = outputPath;
 
         var that = this;
         this.#pages.forEach(function (page) {
@@ -174,6 +184,8 @@ class Enginær {
 
             var filePath = path.join(folderPath, outputPath.base);
             fs.writeFileSync(filePath, output);
+
+            console.log("🤘 page " + outputPath.base + " has been created.");
         });
     }
 

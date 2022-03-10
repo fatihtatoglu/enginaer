@@ -1,8 +1,7 @@
 {
     "site-language": "en",
     "site-culture": "en-US",
-    "site-title-prefix": "Fatih Tatoğlu - ",
-    "site-name": "Fatih Tatoğlu",
-    "site-url": "https://tatoglu.net/",
+    "site-title-prefix": "Enginær - ",
+    "site-name": "Enginær Demo",
     "base-url": "file:///home/fatihtatoglu/workspace/fatihtatoglu/enginaer/dist/"
 }
