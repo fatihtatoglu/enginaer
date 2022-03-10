@@ -152,7 +152,7 @@ class Enginær {
 
             var templateName = page["layout"];
             var data = { ...page, ...that.#menu, ...that.#config };
-            data["base-path"] = path.resolve(outputBasePath) + "/";
+            data["base-path"] = that.#config["base-url"] || path.resolve(outputBasePath) + "/";
 
             for (let [key, callback] of that.#templateFunctionMap) {
                 data[key] = callback;

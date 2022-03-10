@@ -3,5 +3,6 @@
     "site-culture": "en-US",
     "site-title-prefix": "Fatih Tatoğlu - ",
     "site-name": "Fatih Tatoğlu",
-    "site-url": "https://tatoglu.net/"
+    "site-url": "https://tatoglu.net/",
+    "base-url": "file:///home/fatihtatoglu/workspace/fatihtatoglu/enginaer/dist/"
 }
