@@ -8,3 +8,4 @@ This document contains cited and inspired resource links.
 4. [Mustache](https://mustache.github.io/)
 5. [through2](https://www.npmjs.com/package/through2)
 6. [Create Your Own Gulp Plugin](https://www.tutorialsavvy.com/2015/10/create-your-own-gulp-plugin.html/)
+7. [Markdown Project](https://daringfireball.net/projects/markdown/)
