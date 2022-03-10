@@ -22,14 +22,15 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: Locate Source Directory
-      run: cd src
-
     - name: Install Packages
-      run: npm install
+      run: |
+        cd src
+        npm install
   
     - name: Build
-      run: gulp
+      run: |
+        cd src
+        gulp
 
     - name: Publish Artifact
       uses: actions/upload-artifact@v2
