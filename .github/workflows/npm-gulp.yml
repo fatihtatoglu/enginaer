@@ -35,7 +35,7 @@ jobs:
     - name: Publish Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: enginær.zip
+        name: enginær
         path: ${{ github.workspace }}/dist/
     
     - name: Publish GitHub Pages
@@ -43,3 +43,5 @@ jobs:
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ${{ github.workspace }}/dist/
+        user_name: fatihtatoglu
+        user_email: fatih@tatoglu.net
