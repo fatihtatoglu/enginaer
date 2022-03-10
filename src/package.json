@@ -17,12 +17,9 @@
   "devDependencies": {
     "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",
-    "gulp-util": "^3.0.8",
     "marked": "^4.0.12",
     "mustache": "^4.2.0",
     "path": "^0.12.7",
-    "through2": "^4.0.2",
-    "replace-ext": "^2.0.0",
-    "dateformat": "^5.0.3"
+    "through2": "^4.0.2"
   }
 }
