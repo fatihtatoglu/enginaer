@@ -39,11 +39,7 @@ class Enginær {
         this.#fixerMap = new Map();
     }
 
-    get pages() {
-        return this.#pages;
-    }
-
-    get menu() {
+    get #menu() {
         var items = this.#menuItems.sort(function (a, b) {
             return a["order"] - b["order"];
         });
@@ -68,7 +64,7 @@ class Enginær {
         return data;
     }
 
-    get templates() {
+    get #templates() {
 
         if (this.#templateMap === null) {
             var that = this;
@@ -170,10 +166,10 @@ class Enginær {
         this.#pages.forEach(function (page) {
 
             var templateName = page["layout"];
-            var data = { ...page, ...that.menu, ...that.#config };
+            var data = { ...page, ...that.#menu, ...that.#config };
             data["base-path"] = path.resolve(outputBasePath) + "/";
 
-            var output = mustache.render(that.templates[templateName], data, that.templates);
+            var output = mustache.render(that.#templates[templateName], data, that.#templates);
 
             for (let [_, fixer] of that.#fixerMap) {
                 output = fixer.call(this, output);
