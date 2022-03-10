@@ -242,6 +242,7 @@ class Enginær {
 
         data["title"] = title;
 
+        var that = this;
         var pair = metadata.replace("\r", "").split("\n");
         pair.forEach(function (item) {
             if (item.lenght === 0) {
@@ -268,8 +269,8 @@ class Enginær {
         var date = new Date(Date.parse(data["date"]));
         data["date"] = date;
         data["publish-date"] = date.toISOString();
-        data["publish-date-localformat"] = date.toLocaleString("en-US");
-        data["publish-date-title"] = date.toString("en-US");
+        data["publish-date-localformat"] = date.toLocaleDateString(that.#config["site-culture"]);
+        data["publish-date-title"] = date.toString(that.#config["site-culture"]);
 
         return data;
     }
