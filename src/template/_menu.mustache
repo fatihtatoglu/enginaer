@@ -2,12 +2,12 @@
 {{#menuItems}}
     {{#disabled}}
     <li class="disabled">
-        <a href="{{url}}">{{title}}</a>
+        <a href="{{& url}}">{{title}}</a>
     </li>
     {{/disabled}}
     {{^disabled}}
     <li>
-        <a href="{{url}}">{{title}}</a>
+        <a href="{{& url}}">{{title}}</a>
         {{#hasChildren}}
         <div class="sub-menu">
             <ul>
@@ -17,10 +17,10 @@
                     {{/separator}}
                     {{^separator}}
                         {{#disabled}}
-                        <li class="disabled"><a {{#element-id}}id="{{.}}" {{/element-id}}href="{{url}}">{{title}}</a></li>
+                        <li class="disabled"><a {{#element-id}}id="{{.}}" {{/element-id}}href="{{& url}}">{{title}}</a></li>
                         {{/disabled}}
                         {{^disabled}}
-                        <li><a {{#element-id}}id="{{.}}" {{/element-id}}href="{{url}}">{{title}}</a></li>
+                        <li><a {{#element-id}}id="{{.}}" {{/element-id}}href="{{& url}}">{{title}}</a></li>
                         {{/disabled}}
                     {{/separator}}
                 {{/children}}
