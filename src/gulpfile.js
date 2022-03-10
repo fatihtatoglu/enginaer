@@ -11,12 +11,12 @@ const outputPath = "../dist/";
 
 const configPath = baseSourcePath + "./config.json";
 const templateFolderPath = baseSourcePath + "./template";
-const baseAssetPath = baseSourcePath + "./assets";
+const baseAssetPath = baseSourcePath + "/assets";
 const assetPathList = [
-    baseAssetPath + "./css/*.css",
-    baseAssetPath + "./js/*.js",
-    baseAssetPath + "./img/*.png",
-    baseAssetPath + "./img/*.jpg"
+    baseAssetPath + "/css/*.css",
+    baseAssetPath + "/js/*.js",
+    baseAssetPath + "/img/*.png",
+    baseAssetPath + "/img/*.jpg"
 ];
 
 const pagePathList = [
