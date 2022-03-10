@@ -265,7 +265,11 @@ class Enginær {
             data[key] = value;
         });
 
-        data["date"] = new Date(Date.parse(data["date"]));
+        var date = new Date(Date.parse(data["date"]));
+        data["date"] = date;
+        data["publish-date"] = date.toISOString();
+        data["publish-date-localformat"] = date.toLocaleString("en-US");
+        data["publish-date-title"] = date.toString("en-US");
 
         return data;
     }

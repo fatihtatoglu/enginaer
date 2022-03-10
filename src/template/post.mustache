@@ -31,6 +31,11 @@
         {{/image}}
         
             {{&content}}
+            
+            <footer>
+                <address class="author">By <a rel="author" href="#">{{author}}</a></address> - <time pubdate
+                    datetime="{{publish-date}}" title="{{publish-date-title}}">{{publish-date-localformat}}</time>
+            </footer>
         </article>
     </main>
     <footer>{{> _footer}}</footer>
