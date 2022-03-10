@@ -21,6 +21,23 @@ engine.registerFixer("image-path-fixer", function (pageText) {
     return text;
 });
 
+
+engine.registerTemplateFunctionMap("separator", function () {
+    return this.role === "separator";
+});
+
+engine.registerTemplateFunctionMap("hasChildren", function () {
+    return this.children && this.children.length > 0;
+});
+
+engine.registerTemplateFunctionMap("url", function () {
+    if (this.url) {
+        return this.url;
+    }
+
+    return "javascript:;";
+});
+
 function cleanAll() {
     return src(["../dist"], { allowEmpty: true })
         .pipe(clean({ force: true }));

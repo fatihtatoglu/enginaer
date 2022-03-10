@@ -22,6 +22,7 @@ class Enginær {
     #configMap;
     #templateMap;
     #fixerMap;
+    #templateFunctionMap;
 
     constructor(configPath, templatePath) {
 
@@ -37,6 +38,7 @@ class Enginær {
         this.#configMap = null;
         this.#templateMap = null;
         this.#fixerMap = new Map();
+        this.#templateFunctionMap = new Map();
     }
 
     get #menu() {
@@ -44,24 +46,7 @@ class Enginær {
             return a["order"] - b["order"];
         });
 
-        var data = {
-            menuItems: items,
-            "separator": function () {
-                return this.role === "separator";
-            },
-            "hasChildren": function () {
-                return this.children && this.children.length > 0;
-            },
-            "url": function () {
-                if (this.url) {
-                    return this.url;
-                }
-
-                return "javascript:;";
-            }
-        };
-
-        return data;
+        return { menuItems: items };
     }
 
     get #templates() {
@@ -169,6 +154,10 @@ class Enginær {
             var data = { ...page, ...that.#menu, ...that.#config };
             data["base-path"] = path.resolve(outputBasePath) + "/";
 
+            for (let [key, callback] of that.#templateFunctionMap) {
+                data[key] = callback;
+            }
+
             var output = mustache.render(that.#templates[templateName], data, that.#templates);
 
             for (let [_, fixer] of that.#fixerMap) {
@@ -194,6 +183,14 @@ class Enginær {
         }
 
         this.#fixerMap.set(name, callback);
+    }
+
+    registerTemplateFunctionMap(name, callback) {
+        if (this.#templateFunctionMap.has(name)) {
+            throw "the callback has already registered.";
+        }
+
+        this.#templateFunctionMap.set(name, callback);
     }
 
     #fileSanityCheck(file, cb) {
