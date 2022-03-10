@@ -128,7 +128,11 @@ function generataFiles(cb) {
     partialsTemplates["_footer"] = fs.readFileSync("./template/_footer.mustache").toString();
     partialsTemplates["_menu"] = fs.readFileSync("./template/_menu.mustache").toString();
 
+    var outputBasePath = "../dist/";
+
     pages.forEach(function (page) {
+
+        console.log("========================================");
 
         if (!templatePaths[page["layout"]]) {
             var templatePath = "./template/" + page["layout"] + ".mustache";
@@ -151,30 +155,20 @@ function generataFiles(cb) {
         var permalink = data["permalink"];
         var name = data["name"];
 
-        console.log(permalink);
-        console.log(name);
+        console.log("permalink: ", permalink);
+        console.log("name: ", name);
 
-        var outputPath = "";
+        var outputPath = path.parse(path.join(outputBasePath, permalink));
 
-        if (permalink.indexOf(name) >= 0) {
-            outputPath = permalink.replace(name + ".html", "");
-        }
-        else
-        {
-            // TODO: Buraya çözüm bul...
-        }
+        console.log("outputPath: ", outputPath);
+        console.log("path",);
 
-        var folderPath = path.resolve(path.join("../dist", outputPath));
+        var folderPath = path.resolve(outputPath.dir);
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true });
         }
 
-
-        // TODO: dosya adı değil permalink adı olması lazım buna da bir çözüm bul.
-
-        // TODO: menüyü de kontrol etmeyi unutma.
-        
-        var filePath = path.join(folderPath, name + ".html");
+        var filePath = path.join(folderPath, outputPath.base);
         fs.writeFileSync(filePath, output);
     });
 
