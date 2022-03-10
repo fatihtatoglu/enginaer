@@ -2,7 +2,6 @@
 <html lang="{{site-language}}" data-theme="light" data-with="">
 
 <head>
-    <base href="{{& base-path}}" >
     <meta charset="UTF-8">
     <meta name="description" content="{{description}}">
     <meta name="author" content="{{author}}">
@@ -12,9 +11,9 @@
 
     <title>{{site-title-prefix}}{{title}}</title>
 
-    <link rel="stylesheet" href="{{base-url}}/css/main.css">
-    
-    <script src="{{base-url}}/js/main.js"></script>
+    <link rel="stylesheet" href="{{& base-url}}/css/main.css">
+
+    <script src="{{& base-url}}/js/main.js"></script>
 </head>
 
 <body>
