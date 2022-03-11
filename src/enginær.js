@@ -248,7 +248,7 @@ class Enginær {
         data["title"] = title;
 
         var that = this;
-        var pair = metadata.replace("\r", "").split("\n");
+        var pair = metadata.replace("/\r/g", "").split("\n");
         pair.forEach(function (item) {
             if (item.lenght === 0) {
                 return;
