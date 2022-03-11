@@ -1,6 +1,6 @@
 # Enginær
 
-Enginær is a simple website engine.
+Enginær is a simple **static** website engine.
 
 ## Motivation
 
