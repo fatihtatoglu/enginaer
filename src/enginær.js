@@ -52,6 +52,14 @@ class Enginær {
         return this.#getEnricher("raw");
     }
 
+    get #generateEnrichers() {
+        return this.#getEnricher("generate");
+    }
+
+    get #menuEnrichers() {
+        return this.#getEnricher("menu");
+    }
+
     setOptions(options) {
         if (typeof options !== "object") {
             throw new PluginError("enginær", "options must be an object");
@@ -71,8 +79,15 @@ class Enginær {
 
     setPages() {
         var that = this;
-        this.#pages = new Map();
 
+        var markedConfig = this.#options.get("marked");
+        marked.setOptions(markedConfig);
+
+        var config = this.#options.get("config");
+
+        var menu = this.#options.get("menu") || {};
+
+        this.#pages = new Map();
         return through.obj(function (file, encoding, cb) {
             if (!that.#checkPageFileSanity(file, cb)) {
                 return;
@@ -85,25 +100,28 @@ class Enginær {
             var metadata = that.#parsePageMetadata(fileRawContent);
             var pageContent = that.#parsePageContent(fileRawContent);
 
-            that.#metadaEnrichers.forEach(f => {
+            var htmlContent = marked.parse(pageContent);
+
+            that.#rawEnrichers.forEach(f => {
                 var key = f["key"];
                 var handler = f["handler"];
 
-                if (!metadata.has(key)) {
-                    var message = "'" + key + "' does not exist in metadata.";
-                    cb(new PluginError("enginær", message), file);
-                }
-
-                var value = metadata.get(key);
-                value = handler.call(null, value);
-
+                var value = handler.call(null, htmlContent, config);
                 metadata.set(key, value);
+            });
+
+            that.#menuEnrichers.forEach(f => {
+                var handler = f["handler"];
+
+                handler.call(null, metadata, menu, config);
             });
 
             that.#pages.set(pageName, {
                 "metadata": metadata,
-                "content": pageContent
+                "content": htmlContent
             });
+
+            that.#options.set("menu", menu);
 
             cb(null, file);
         });
@@ -128,19 +146,17 @@ class Enginær {
     }
 
     generate() {
-        var templates = this.#options.get("template")["cache"];
+        var that = this;
 
-        var markedConfig = this.#options.get("marked");
-        marked.setOptions(markedConfig);
+        var templates = this.#options.get("template")["cache"];
 
         var mustacheConfig = this.#options.get("template")["helpers"];
 
-        var vinylFiles = [];
+        var config = this.#options.get("config");
 
-        var that = this;
+        var vinylFiles = [];
         for (const [key, value] of this.#pages) {
             var metadata = value["metadata"];
-            var config = that.#options.get("config");
 
             var templateData = { ...config, ...mustacheConfig };
 
@@ -151,16 +167,42 @@ class Enginær {
             var templateName = metadata.get("layout");
             var template = templates[templateName];
 
-            var markdownContent = value["content"];
-            var htmlContent = marked.parse(markdownContent);
-            templateData["content"] = htmlContent;
+            // set content
+            templateData["content"] = value["content"];
 
-            that.#rawEnrichers.forEach(f => {
+            // set menu
+            templateData["menu"] = Object.values(that.#options.get("menu"));
+            templateData["menu"] = templateData["menu"].sort(function (a, b) {
+                return a["order"] - b["order"];
+            });
+
+            that.#metadaEnrichers.forEach(f => {
                 var key = f["key"];
                 var handler = f["handler"];
 
-                var value = handler.call(null, htmlContent);
+                if (!metadata.has(key)) {
+                    var message = "'" + key + "' does not exist in metadata.";
+                    cb(new PluginError("enginær", message), file);
+                }
+
+                var value = metadata.get(key);
+                value = handler.call(null, value, config);
+
                 metadata.set(key, value);
+            });
+
+            that.#generateEnrichers.forEach(f => {
+                var sourceKey = f["sourceKey"];
+                var targetKey = f["targetKey"]
+                var handler = f["handler"];
+
+                if (!metadata.has(sourceKey)) {
+                    var message = "'" + sourceKey + "' does not exist in metadata.";
+                    cb(new PluginError("enginær", message), file);
+                }
+
+                var value = handler.call(null, metadata.get(sourceKey), config);
+                metadata.set(targetKey, value);
             });
 
             // add page metadata

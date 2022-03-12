@@ -83,6 +83,14 @@ enginær.setOptions({
                 "handler": function (value) {
                     return new Date(Date.parse(value));
                 }
+            },
+            {
+                "sourceKey": "date",
+                "targetKey": "publish-date",
+                "type": "generate",
+                "handler": function (date) {
+                    return date.toISOString();
+                }
             }
         ]
     },
@@ -134,8 +142,10 @@ enginær.setOptions({
 | | ***path*** | | The page folders paths | string, string[] |
 | | ***enrichers*** | | The enricher array | object[] |
 | | | *key* | Name of the result object | string |
-| | | *type* | Type of the enricher | enum: raw, metadata |
+| | | *type* | Type of the enricher | enum: raw, metadata, generate, menu |
 | | | *handler* | The enricher function | Function |
+| | | *sourceKey* | The name of the source metadata value. This key is used on in ***generate*** type. | string |
+| | | *targetKey* | The name of the target metadata. This key is used on in ***generate*** type. | string |
 | **template** | | | The template object | object |
 | | ***path*** | | The templates paths | string, string[] |
 | | ***helpers*** | | The render helper function of the templates | pair<string, Function> |
@@ -204,9 +214,16 @@ The other customization options are `page.enrichers` and `template.helpers`.
 
 ##### page.enrichers
 
-This customization step provides adding new key-value pair in the page metadata.
+This customization step provides adding new key-value pair in the page metadata. The handler function parameters can be changed by type.
 
-##### template.helpers`
+| Enricher Type | Function Signature | Return Value | Execution Order | Stage |
+| :---: | :--- | :--- | :---: | :---: |
+| raw | `function(htmlContent, config)` | any | 1 | setPage |
+| menu | `function(metadata, menu, config)` | - | 2 | setPage |
+| metadata | `function(value, config)` | any | 3 | generate |
+| generate | `function(sourceValue, config)` | any | 4 | generate |
+
+##### template.helpers
 
 This customization step provides helpers for rendering mustache templates.
 
