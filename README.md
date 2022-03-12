@@ -91,6 +91,28 @@ enginær.setOptions({
                 "handler": function (date) {
                     return date.toISOString();
                 }
+            },
+            {
+                "type": "menu",
+                "handler": function (metadata, menu) {
+
+                    var layout = metadata.get("layout");
+                    var title = metadata.get("title");
+                    if (layout === "page") {
+                        var menuItem = {
+                            "title": title,
+                            "url": metadata.get("permalink"),
+                            "order": metadata.get("order")
+                        };
+
+                        if (metadata.get("published") !== "true") {
+                            menuItem["disabled"] = true;
+                            delete menuItem["url"];
+                        }
+
+                        menu[title] = menuItem;
+                    }
+                }
             }
         ]
     },
