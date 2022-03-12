@@ -14,12 +14,17 @@
     "url": "https://github.com/fatihtatoglu/enginaer/issues"
   },
   "homepage": "https://github.com/fatihtatoglu/enginaer#readme",
-  "devDependencies": {
+  "dependencies": {
     "gulp": "^4.0.2",
     "gulp-clean": "^0.4.0",
     "marked": "^4.0.12",
     "mustache": "^4.2.0",
     "path": "^0.12.7",
-    "through2": "^4.0.2"
-  }
+    "through2": "^4.0.2",
+    "vinyl": "^2.2.1"
+  },
+  "devDependencies": {
+    "gulp-replace": "^1.1.3"
+  },
+  "main": "enginær.js"
 }

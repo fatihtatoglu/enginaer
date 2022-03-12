@@ -1,98 +1,125 @@
 const { series, parallel, src, dest } = require("gulp");
 const clean = require("gulp-clean");
-const Enginær = require("./enginær");
+const replace = require("gulp-replace");
 
-/**
- * Path Declarations
- */
-/* ================================================================================ */
-const baseSourcePath = "./test/";
-const outputPath = "../dist/";
+const enginær = require("./enginær");
 
-const configPath = baseSourcePath + "./config.json";
-const templateFolderPath = baseSourcePath + "./template";
-const baseAssetPath = baseSourcePath + "/assets";
-const assetPathList = [
-    baseAssetPath + "/css/*.css",
-    baseAssetPath + "/js/*.js",
-    baseAssetPath + "/img/*.png",
-    baseAssetPath + "/img/*.jpg"
-];
+enginær.setOptions({
+    "output": "../dist/",
 
-const pagePathList = [
-    baseSourcePath + "./page/**/*.md"
-];
-/* ================================================================================ */
+    "asset": {
+        "base": "./test/assets/",
+        "path": [
+            "./test/assets/css/*.css",
+            "./test/assets/js/*.js",
+            "./test/assets/img/*.png",
+            "./test/assets/img/*.jpg"
+        ]
+    },
 
-const engine = new Enginær(configPath, templateFolderPath);
+    "page": {
+        "path": "./test/page/**/*.md",
+        "enrichers": [
+            {
+                "key": "title",
+                "type": "raw",
+                "handler": function (fileRawContent) {
+                    var titleRegex = /<h1>(.*)<\/h1>/g;
+                    var titleResult = titleRegex.exec(fileRawContent);
 
-/**
- * Register Fixers
- */
-engine.registerFixer("header-fixer", function (pageText) {
-    var text = pageText;
+                    return titleResult[1];
+                }
+            },
+            {
+                "key": "tags",
+                "type": "metadata",
+                "handler": function (value) {
+                    return value.split().map(v => {
+                        return v.replace(/\_/g, " ");
+                    });
+                }
+            },
+            {
+                "key": "date",
+                "type": "metadata",
+                "handler": function (value) {
+                    return new Date(Date.parse(value));
+                }
+            }
+        ]
+    },
 
-    text = text.replace("<h1>", "<header><h1>");
-    text = text.replace("</h1>", "</h1></header>");
+    "template": {
+        "path": "./test/template/*.mustache",
+        "helpers": {
+            "separator": function () {
+                return this.role === "separator";
+            },
+            "hasChildren": function () {
+                return this.children && this.children.length > 0;
+            },
+            "url": function () {
+                if (this.url) {
+                    return this.url;
+                }
 
-    return text;
-});
+                return "javascript:;";
+            }
+        }
+    },
 
-engine.registerFixer("image-path-fixer", function (pageText) {
-    var text = pageText;
+    "config": {
+        "site-language": "en",
+        "site-culture": "en-US",
+        "site-title-prefix": "Enginær - ",
+        "site-name": "Enginær Demo",
+        "base-url": "https://blog.tatoglu.net/enginaer/"
+    },
 
-    text = text.replace(/..\/assets\/img\//g, "./img/");
-
-    return text;
-});
-
-/**
- * Register Tepmplate Functions
- */
-engine.registerTemplateFunctionMap("separator", function () {
-    return this.role === "separator";
-});
-
-engine.registerTemplateFunctionMap("hasChildren", function () {
-    return this.children && this.children.length > 0;
-});
-
-engine.registerTemplateFunctionMap("url", function () {
-    if (this.url) {
-        return this.url;
+    "marked": {
+        breaks: true,
+        smartLists: true,
+        headerIds: false
     }
-
-    return "javascript:;";
 });
 
 // Gulp Step 1 - Clean old files.
 function cleanAll() {
-    return src([outputPath], { allowEmpty: true })
+    return src([enginær.outputPath], { allowEmpty: true })
         .pipe(clean({ force: true }));
 }
 
 // Gulp Step 2 - Copy all required assets.
 function copyAssets() {
-    return src(assetPathList, { base: baseAssetPath })
-        .pipe(dest(outputPath));
+    return src(enginær.assetPath, { base: enginær.assetBasePath })
+        .pipe(dest(enginær.outputPath));
 }
 
-// Gulp Step 3 - Read Markdown Pages
-function readPages() {
-    return src(pagePathList)
-        .pipe(engine.readPages());
+// Gulp Step 3 - Add Pages
+function loadPages() {
+    return src(enginær.pagePath)
+        .pipe(enginær.setPages());
 }
 
-// Gulp Step 4 - Generate Web Site
-function generateWebSite(cb) {
-    engine.generateMenu();
-    engine.generateFiles(outputPath);
+// Gulp Step 4 - Add Templates
+function loadTemplates() {
+    return src(enginær.templatePath)
+        .pipe(enginær.setTemplates());
+}
 
-    cb();
-};
+// Gulp Step 5 - Generate Output
+function generate() {
+    return enginær.generate()
+        .pipe(replace("<h1>", "<header><h1>"))
+        .pipe(replace("</h1>", "</h1></header>"))
+        .pipe(replace(/..\/assets\/img\//g, "./img/"))
+        .pipe(dest("../dist/"));
+}
 
 exports.default = series(
     cleanAll,
-    parallel(copyAssets, readPages),
-    generateWebSite
+
+    parallel(copyAssets, loadPages, loadTemplates),
+
+    generate
 );

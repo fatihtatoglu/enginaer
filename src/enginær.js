@@ -1,292 +1,304 @@
 "use strict";
 
+const PluginError = require("plugin-error");
+
 const through = require("through2");
 const path = require("path");
-const marked = require("marked");
-const fs = require("fs");
-const mustache = require("mustache");
+const Vinyl = require("vinyl");
 
-marked.setOptions({
-    breaks: true,
-    smartLists: true,
-    headerIds: false
-});
+const marked = require("marked");
+const mustache = require("mustache");
 
 class Enginær {
 
+    #options;
     #pages;
-    #menuItems;
-    #configPath;
-    #templatePath;
+    #enrichers;
 
-    #configMap;
-    #templateMap;
-    #fixerMap;
-    #templateFunctionMap;
+    constructor() {
+        this.#enrichers = {};
+    }
 
-    constructor(configPath, templatePath) {
+    get outputPath() {
+        var outputPath = this.#options.get("output");
+        return outputPath;
+    }
 
-        if (!new.target) {
-            throw "must initialize the Enginær.";
+    get assetPath() {
+        var assetConfig = this.#options.get("asset");
+        return assetConfig["path"];
+    }
+
+    get assetBasePath() {
+        var assetConfig = this.#options.get("asset");
+        return assetConfig["base"];
+    }
+
+    get pagePath() {
+        var pageConfig = this.#options.get("page");
+        return pageConfig["path"];
+    }
+
+    get templatePath() {
+        var templateConfig = this.#options.get("template");
+        return templateConfig["path"];
+    }
+
+    get #metadaEnrichers() {
+        return this.#getEnricher("metadata");
+    }
+
+    get #rawEnrichers() {
+        return this.#getEnricher("raw");
+    }
+
+    setOptions(options) {
+        if (typeof options !== "object") {
+            throw new PluginError("enginær", "options must be an object");
         }
 
-        this.#configPath = configPath;
-        this.#templatePath = templatePath;
+        this.#options = new Map();
 
-        this.#pages = [];
-        this.#menuItems = [];
-        this.#configMap = null;
-        this.#templateMap = null;
-        this.#fixerMap = new Map();
-        this.#templateFunctionMap = new Map();
-    }
-
-    get #menu() {
-        var items = this.#menuItems.sort(function (a, b) {
-            return a["order"] - b["order"];
-        });
-
-        return { menuItems: items };
-    }
-
-    get #templates() {
-
-        if (this.#templateMap === null) {
-            var that = this;
-            this.#templateMap = {};
-
-            fs.readdirSync(this.#templatePath).filter(item => {
-                return item.endsWith(".mustache");
-            }).forEach(item => {
-                var templatePath = path.join(that.#templatePath, item);
-                var key = item.replace(".mustache", "");
-
-                that.#templateMap[key] = fs.readFileSync(templatePath).toString();
-            });
-
-            console.log("🤔 templates has been loaded.");
-        }
-
-        return this.#templateMap;
-    }
-
-    get #config() {
-        if (this.#configMap === null) {
-            var config = fs.readFileSync(this.#configPath);
-            this.#configMap = JSON.parse(config.toString());
-
-            console.log("🤔 config has been loaded.");
-        }
-
-        return this.#configMap;
-    }
-
-    readPages() {
         var that = this;
+        for (const key in options) {
+            if (that.#options.has(key)) {
+                throw new PluginError("enginær", "the option has already added.");
+            }
+
+            that.#options.set(key, options[key]);
+        }
+    }
+
+    setPages() {
+        var that = this;
+        this.#pages = new Map();
 
         return through.obj(function (file, encoding, cb) {
-            if (!that.#fileSanityCheck(file, cb)) {
+            if (!that.#checkPageFileSanity(file, cb)) {
                 return;
             }
 
-            var page = that.#extractMetadata(file);
-            var filePath = path.parse(file.path);
+            var pageName = that.#getFileName(file);
 
-            page["path"] = filePath.dir;
-            page["base"] = filePath.base;
-            page["name"] = filePath.name;
+            var fileRawContent = file.contents.toString();
 
-            that.#addPage(page);
+            var metadata = that.#parsePageMetadata(fileRawContent);
+            var pageContent = that.#parsePageContent(fileRawContent);
 
-            console.log("🤓 read pages: ", page["name"]);
+            that.#metadaEnrichers.forEach(f => {
+                var key = f["key"];
+                var handler = f["handler"];
+
+                if (!metadata.has(key)) {
+                    var message = "'" + key + "' does not exist in metadata.";
+                    cb(new PluginError("enginær", message), file);
+                }
+
+                var value = metadata.get(key);
+                value = handler.call(null, value);
+
+                metadata.set(key, value);
+            });
+
+            that.#pages.set(pageName, {
+                "metadata": metadata,
+                "content": pageContent
+            });
 
             cb(null, file);
         });
     }
 
-    generateMenu() {
-        var posts = {
-            "title": "Posts",
-            "children": []
-        };
+    setTemplates() {
+        var that = this;
+        var templateConfig = this.#options.get("template");
+        templateConfig["cache"] = {};
+
+        return through.obj(function (file, encoding, cb) {
+            if (!that.#checkTemplateFileSanity(file, cb)) {
+                return;
+            }
+            var name = that.#getFileName(file);
+            var content = file.contents.toString();
+
+            templateConfig["cache"][name] = content;
+
+            cb(null, file);
+        });
+    }
+
+    generate() {
+        var templates = this.#options.get("template")["cache"];
+
+        var markedConfig = this.#options.get("marked");
+        marked.setOptions(markedConfig);
+
+        var mustacheConfig = this.#options.get("template")["helpers"];
+
+        var vinylFiles = [];
 
         var that = this;
-        this.#pages.forEach(function (page) {
+        for (const [key, value] of this.#pages) {
+            var metadata = value["metadata"];
+            var config = that.#options.get("config");
 
-            if (page["layout"] === "page") {
-                var pageMenuItem = {
-                    "title": page["title"],
-                    "url": page["permalink"],
-                    "order": page["order"]
-                };
+            var templateData = { ...config, ...mustacheConfig };
 
-                if (page["published"] === "false") {
-                    pageMenuItem["disabled"] = true;
-                    delete pageMenuItem["url"];
-                }
+            // add base url
+            var basePath = config["base-url"] || path.resolve(that.#options.get("output")) + "/";
+            templateData["base-path"] = basePath;
 
-                console.log("🆗 generate menu:", pageMenuItem["title"]);
+            var templateName = metadata.get("layout");
+            var template = templates[templateName];
 
-                that.#addMenuItem(pageMenuItem);
-            }
-            else if (page["layout"] === "post") {
-                var postMenuItem = {
-                    "title": page["title"],
-                    "url": page["permalink"],
-                    "date": page["date"]
-                };
+            var markdownContent = value["content"];
+            var htmlContent = marked.parse(markdownContent);
+            templateData["content"] = htmlContent;
 
-                if (page["published"] === "false") {
-                    postMenuItem["disabled"] = true;
-                    delete postMenuItem["url"];
-                }
+            that.#rawEnrichers.forEach(f => {
+                var key = f["key"];
+                var handler = f["handler"];
 
-                posts["children"].push(postMenuItem);
+                var value = handler.call(null, htmlContent);
+                metadata.set(key, value);
+            });
 
-                console.log("🆗 generate menu:", postMenuItem["title"]);
-            }
-        });
+            // add page metadata
+            metadata.forEach((v, k) => {
+                templateData[k] = v;
+            });
 
-        posts["children"] = posts["children"].sort(function (a, b) {
-            return a["date"] - b["date"];
-        });
+            var permalink = templateData["permalink"];
+            var output = mustache.render(template, templateData, templates);
 
-        this.#addMenuItem(posts);
-    }
-
-    generateFiles(outputPath) {
-        var outputBasePath = outputPath;
-
-        var that = this;
-        this.#pages.forEach(function (page) {
-
-            var templateName = page["layout"];
-            var data = { ...page, ...that.#menu, ...that.#config };
-            data["base-path"] = that.#config["base-url"] || path.resolve(outputBasePath) + "/";
-
-            for (let [key, callback] of that.#templateFunctionMap) {
-                data[key] = callback;
-            }
-
-            var output = mustache.render(that.#templates[templateName], data, that.#templates);
-
-            for (let [_, fixer] of that.#fixerMap) {
-                output = fixer.call(this, output);
-            }
-
-            var permalink = data["permalink"];
-            var outputPath = path.parse(path.join(outputBasePath, permalink));
-
-            var folderPath = path.resolve(outputPath.dir);
-            if (!fs.existsSync(folderPath)) {
-                fs.mkdirSync(folderPath, { recursive: true });
-            }
-
-            var filePath = path.join(folderPath, outputPath.base);
-            fs.writeFileSync(filePath, output);
-
-            console.log("🤘 page " + outputPath.base + " has been created.");
-        });
-    }
-
-    registerFixer(name, callback) {
-        if (this.#fixerMap.has(name)) {
-            throw "the callback has already registered.";
+            vinylFiles.push(new Vinyl({
+                cwd: "",
+                base: undefined,
+                path: permalink,
+                contents: Buffer.from(output)
+            }));
         }
 
-        this.#fixerMap.set(name, callback);
+        var stream = through.obj(function (file, encoding, cb) {
+            cb(null, file);
+        });
+
+        vinylFiles.forEach(function (vinylFile) {
+            stream.write(vinylFile);
+        });
+
+        stream.end();
+
+        return stream;
     }
 
-    registerTemplateFunctionMap(name, callback) {
-        if (this.#templateFunctionMap.has(name)) {
-            throw "the callback has already registered.";
-        }
-
-        this.#templateFunctionMap.set(name, callback);
-    }
-
-    #fileSanityCheck(file, cb) {
+    #checkPageFileSanity(file, cb) {
         if (file.isNull()) {
-            cb(new gutil.PluginError("fatih", "File is null."));
+            var message = "Page file is null.";
+            cb(new PluginError("enginær", message), file);
+
             return false;
         }
 
         if (file.isStream()) {
-            cb(new gutil.PluginError("fatih", "Streaming not supported."));
+            var message = "Stream is not supported";
+            cb(new PluginError("enginær", message), file);
+
             return false;
         }
 
         if (!file.contents) {
-            cb(new gutil.PluginError("fatih", "File 'contents' property is missing."));
+            var message = "'content' property is missing.";
+            cb(new PluginError("enginær", message), file);
+
             return false;
         }
 
         var content = file.contents.toString();
         if (!content.startsWith("---")) {
-            cb(new gutil.PluginError("fatih", "File must start with metadata section."));
+            var message = "File must be started with metadata section.";
+            cb(new PluginError("enginær", message), file);
+
             return false;
         }
 
         return true;
     }
 
-    #extractMetadata(file) {
-        var data = {};
+    #checkTemplateFileSanity(file, cb) {
+        if (file.isNull()) {
+            var message = "Template file is null.";
+            cb(new PluginError("enginær", message), file);
 
-        var content = file.contents.toString();
-        var metadataEndIndex = content.indexOf("---", 1);
-        var metadata = content.substring(4, metadataEndIndex);
-        var markdownContent = content.substring(metadataEndIndex + 3);
-        var pageContent = marked.parse(markdownContent);
+            return false;
+        }
 
-        data["content"] = pageContent;
+        if (file.isStream()) {
+            var message = "Stream is not supported";
+            cb(new PluginError("enginær", message), file);
 
-        var titleRegex = /<h1>(.*)<\/h1>/g;
-        var titleResult = titleRegex.exec(pageContent);
-        var title = titleResult[1];
+            return false;
+        }
 
-        data["title"] = title;
+        if (!file.contents) {
+            var message = "'content' property is missing.";
+            cb(new PluginError("enginær", message), file);
 
-        var that = this;
-        var pair = metadata.replace("/\r/g", "").split("\n");
-        pair.forEach(function (item) {
-            if (item.lenght === 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    #getFileName(file) {
+        var fileInfo = path.parse(file.path);
+        return fileInfo.name;
+    }
+
+    #parsePageMetadata(fileRawContent) {
+        var metadataEndIndex = fileRawContent.indexOf("---", 1);
+        var metadataSection = fileRawContent.substring(4, metadataEndIndex);
+
+        var metadata = new Map();
+        var data = metadataSection.replace("/\r/g", "").split("\n");
+        data.forEach(function (item) {
+            if (item.length === 0) {
                 return;
             }
 
             var kvp = item.split(": ");
             var key = kvp[0];
-            var value = kvp[1];
-
-            if (key === "tags") {
-                value = value.split(" ").map(function (v) {
-                    return v.replace("_", " ");
-                });
-            }
-
             if (key === "") {
                 return;
             }
 
-            data[key] = value;
+            var value = kvp[1];
+
+            metadata.set(key, value);
         });
 
-        var date = new Date(Date.parse(data["date"]));
-        data["date"] = date;
-        data["publish-date"] = date.toISOString();
-        data["publish-date-localformat"] = date.toLocaleDateString(that.#config["site-culture"]);
-        data["publish-date-title"] = date.toString(that.#config["site-culture"]);
-
-        return data;
+        return metadata;
     }
 
-    #addPage(page) {
-        this.#pages.push(page);
+    #parsePageContent(fileRawContent) {
+        var metadataEndIndex = fileRawContent.indexOf("---", 1);
+        var pageContent = fileRawContent.substring(metadataEndIndex + 3);
+
+        return pageContent;
     }
 
-    #addMenuItem(item) {
-        this.#menuItems.push(item);
+    #getEnricher(type) {
+        if (!this.#enrichers[type]) {
+            var enrichers = this.#options.get("page")["enrichers"];
+            return enrichers.filter(function (e) {
+                if (e["type"] === type) {
+                    return e;
+                }
+            });
+        }
+
+        return this.#enrichers[type];
     }
 }
 
-module.exports = Enginær;
+module.exports = new Enginær();
