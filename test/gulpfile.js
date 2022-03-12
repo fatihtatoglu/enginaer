@@ -1,24 +1,23 @@
 const { series, parallel, src, dest } = require("gulp");
 const clean = require("gulp-clean");
 const replace = require("gulp-replace");
-
-const enginær = require("./enginær");
+const enginær = require("enginaer");
 
 enginær.setOptions({
     "output": "../dist/",
 
     "asset": {
-        "base": "./test/assets/",
+        "base": "./assets/",
         "path": [
-            "./test/assets/css/*.css",
-            "./test/assets/js/*.js",
-            "./test/assets/img/*.png",
-            "./test/assets/img/*.jpg"
+            "./assets/css/*.css",
+            "./assets/js/*.js",
+            "./assets/img/*.png",
+            "./assets/img/*.jpg"
         ]
     },
 
     "page": {
-        "path": "./test/page/**/*.md",
+        "path": "./page/**/*.md",
         "enrichers": [
             {
                 "key": "title",
@@ -50,7 +49,7 @@ enginær.setOptions({
     },
 
     "template": {
-        "path": "./test/template/*.mustache",
+        "path": "./template/*.mustache",
         "helpers": {
             "separator": function () {
                 return this.role === "separator";
