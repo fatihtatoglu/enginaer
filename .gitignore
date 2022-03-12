@@ -351,3 +351,4 @@ MigrationBackup/
 
 package-lock.json
 dist/
+npm/

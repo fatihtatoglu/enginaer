@@ -15,8 +15,6 @@
   },
   "homepage": "https://github.com/fatihtatoglu/enginaer#readme",
   "dependencies": {
-    "gulp": "^4.0.2",
-    "gulp-clean": "^0.4.0",
     "marked": "^4.0.12",
     "mustache": "^4.2.0",
     "path": "^0.12.7",
@@ -24,5 +22,8 @@
     "vinyl": "^2.2.1",
     "plugin-error": "^1.0.1"
   },
-  "main": "enginær.js"
+  "main": "enginær.js",
+  "devDependencies": {
+    "gulp": "^4.0.2"
+  }
 }
