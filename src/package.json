@@ -24,6 +24,7 @@
   },
   "main": "enginær.js",
   "devDependencies": {
-    "gulp": "^4.0.2"
+    "gulp": "^4.0.2",
+    "gulp-clean": "^0.4.0"
   }
 }

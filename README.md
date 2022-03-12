@@ -14,7 +14,7 @@ Creating a blog engine there are some challenges. The first one is to create an 
 
 Apart from all of the other challenges, executing operations in parallel or serial order I need to develop an automated pipeline system. **`gulp`** is a flexible and repetitive system. I selected **`gulp`** and the main part of the project stands a gulp plugin.
 
-![gulp](/docs/gulp.png "gulp") ![markdown](docs/markdown.png "markdown") ![markedjs](/docs/markedjs.png "markedjs") ![mustache](docs/mustache.png "mustache") ![nodejs](docs/nodejs.png "nodejs") ![github actions](docs/actions.png "github actions")
+![gulp](docs/gulp.png "gulp") ![markdown](docs/markdown.png "markdown") ![markedjs](docs/markedjs.png "markedjs") ![mustache](docs/mustache.png "mustache") ![nodejs](docs/nodejs.png "nodejs") ![github actions](docs/actions.png "github actions")
 
 ## Usage
 

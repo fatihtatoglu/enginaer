@@ -18,7 +18,17 @@ function copyLicense() {
         .pipe(dest(outputPath));
 }
 
+function copyReadme() {
+    return src(["../README.md"])
+        .pipe(dest(outputPath));
+}
+
+function copyImages() {
+    return src(["../docs/*.png"])
+        .pipe(dest(outputPath + "docs/"));
+}
+
 exports.default = series(
     cleanAll,
-    parallel(copyLibrary, copyLicense)
+    parallel(copyLibrary, copyLicense, copyReadme, copyImages)
 );
