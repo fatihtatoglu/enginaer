@@ -9,7 +9,7 @@ While developing, my motivation has been to easily publish a new post or a new p
 I like writing blogs, but I cannot take any time. I know writing markdown is so easy and also the markdown document has a human-readable structure. Moreover, markdown documents also support many components that using in HTML documents is not easy such as tables, images, and lists.
 
 ![Publish Test Project](https://github.com/fatihtatoglu/enginaer/actions/workflows/test.yml/badge.svg
-) [![Node version](https://img.shields.io/node/v/enginaer.svg?style=flat)](http://nodejs.org/download/) [![HitCount](https://hits.dwyl.com/fatihtatoglu/enginaer.svg?style=flat-square&show=unique)](http://hits.dwyl.com/fatihtatoglu/enginaer) ![GitHub top language](https://img.shields.io/github/languages/top/fatihtatoglu/enginaer) ![GitHub](https://img.shields.io/github/license/fatihtatoglu/enginaer)
+) [![HitCount](https://hits.dwyl.com/fatihtatoglu/enginaer.svg?style=flat-square&show=unique)](http://hits.dwyl.com/fatihtatoglu/enginaer) ![GitHub top language](https://img.shields.io/github/languages/top/fatihtatoglu/enginaer) ![GitHub](https://img.shields.io/github/license/fatihtatoglu/enginaer) ![npm](https://img.shields.io/npm/v/enginaer)
 
 ## Challenges
 
