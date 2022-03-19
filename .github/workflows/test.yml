@@ -3,8 +3,6 @@ name: Publish Test Project
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   build:
