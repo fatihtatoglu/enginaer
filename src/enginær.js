@@ -302,7 +302,7 @@ class Enginær {
         var metadataSection = fileRawContent.substring(4, metadataEndIndex);
 
         var metadata = new Map();
-        var data = metadataSection.replace("/\r/g", "").split("\n");
+        var data = metadataSection.replace(/\r/g, "").split("\n");
         data.forEach(function (item) {
             if (item.length === 0) {
                 return;
@@ -315,7 +315,7 @@ class Enginær {
             }
 
             var value = kvp[1];
-
+            
             metadata.set(key, value);
         });
 
