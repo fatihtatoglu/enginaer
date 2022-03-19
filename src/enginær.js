@@ -116,6 +116,35 @@ class Enginær {
                 handler.call(null, metadata, menu, config);
             });
 
+            that.#metadaEnrichers.forEach(f => {
+                var key = f["key"];
+                var handler = f["handler"];
+
+                if (!metadata.has(key)) {
+                    var message = "'" + key + "' does not exist in metadata.";
+                    cb(new PluginError("enginær", message), file);
+                }
+
+                var value = metadata.get(key);
+                value = handler.call(null, value, config);
+
+                metadata.set(key, value);
+            });
+
+            that.#generateEnrichers.forEach(f => {
+                var sourceKey = f["sourceKey"];
+                var targetKey = f["targetKey"]
+                var handler = f["handler"];
+
+                if (!metadata.has(sourceKey)) {
+                    var message = "'" + sourceKey + "' does not exist in metadata.";
+                    cb(new PluginError("enginær", message), file);
+                }
+
+                var value = handler.call(null, metadata.get(sourceKey), config);
+                metadata.set(targetKey, value);
+            });
+
             that.#pages.set(pageName, {
                 "metadata": metadata,
                 "content": htmlContent
@@ -174,35 +203,6 @@ class Enginær {
             templateData["menu"] = Object.values(that.#options.get("menu"));
             templateData["menu"] = templateData["menu"].sort(function (a, b) {
                 return a["order"] - b["order"];
-            });
-
-            that.#metadaEnrichers.forEach(f => {
-                var key = f["key"];
-                var handler = f["handler"];
-
-                if (!metadata.has(key)) {
-                    var message = "'" + key + "' does not exist in metadata.";
-                    cb(new PluginError("enginær", message), file);
-                }
-
-                var value = metadata.get(key);
-                value = handler.call(null, value, config);
-
-                metadata.set(key, value);
-            });
-
-            that.#generateEnrichers.forEach(f => {
-                var sourceKey = f["sourceKey"];
-                var targetKey = f["targetKey"]
-                var handler = f["handler"];
-
-                if (!metadata.has(sourceKey)) {
-                    var message = "'" + sourceKey + "' does not exist in metadata.";
-                    cb(new PluginError("enginær", message), file);
-                }
-
-                var value = handler.call(null, metadata.get(sourceKey), config);
-                metadata.set(targetKey, value);
             });
 
             // add page metadata
