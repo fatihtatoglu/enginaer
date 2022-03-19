@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="{{site-language}}" data-theme="light" data-with="">
+
+<head>
+    <base href="{{& base-path}}" >
+    <meta charset="UTF-8">
+    <meta name="description" content="{{description}}">
+    <meta name="author" content="{{author}}">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>{{site-title-prefix}}{{title}}</title>
+
+    <link rel="stylesheet" href="./css/main.css">
+
+    <script src="./js/main.js"></script>
+</head>
+
+<body>
+    <header><span class="site-name">{{site-name}}</span></header>
+    <nav id="navigation">
+    {{> _menu}}
+    </nav>
+    <main>
+        <article>
+            {{& content}}
+
+            {{#pages}}
+
+                {{#published}}
+                    <h2>{{title}}</h2>
+                    <p>{{layout}}</p>
+                    <p>{{author}}</p>
+                    <p>{{description}}</p>
+                    <p>{{published}}</p>
+
+                    <ul>
+                    {{#tags}}
+                        <li>{{.}}</li>
+                    {{/tags}}
+                    </ul>
+                    
+                {{/published}}
+
+            {{/pages}}
+
+        </article>
+    </main>
+    <footer>{{> _footer}}</footer>
+</body>
+
+</html>

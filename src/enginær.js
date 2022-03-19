@@ -14,6 +14,7 @@ class Enginær {
     #options;
     #pages;
     #enrichers;
+    #templatePages;
 
     constructor() {
         this.#enrichers = {};
@@ -88,6 +89,7 @@ class Enginær {
         var menu = this.#options.get("menu") || {};
 
         this.#pages = new Map();
+        this.#templatePages = [];
         return through.obj(function (file, encoding, cb) {
             if (!that.#checkPageFileSanity(file, cb)) {
                 return;
@@ -116,10 +118,58 @@ class Enginær {
                 handler.call(null, metadata, menu, config);
             });
 
+            that.#metadaEnrichers.forEach(f => {
+                var key = f["key"];
+                var handler = f["handler"];
+
+                if (!metadata.has(key)) {
+                    var message = "'" + key + "' does not exist in metadata.";
+                    cb(new PluginError("enginær", message), file);
+                }
+
+                var value = metadata.get(key);
+                value = handler.call(null, value, config);
+
+                metadata.set(key, value);
+            });
+
+            that.#generateEnrichers.forEach(f => {
+                var sourceKey = f["sourceKey"];
+                var targetKey = f["targetKey"]
+                var handler = f["handler"];
+
+                if (!metadata.has(sourceKey)) {
+                    var message = "'" + sourceKey + "' does not exist in metadata.";
+                    cb(new PluginError("enginær", message), file);
+                }
+
+                var value = handler.call(null, metadata.get(sourceKey), config);
+                metadata.set(targetKey, value);
+            });
+
             that.#pages.set(pageName, {
                 "metadata": metadata,
                 "content": htmlContent
             });
+
+            var templatePage = {
+                "name": pageName
+            };
+
+            metadata.forEach((v, k) => {
+
+                if (k === "order") {
+                    v = parseInt(v);
+                }
+
+                if (k === "published") {
+                    v = v === "true" ? true : false;
+                }
+
+                templatePage[k] = v;
+            });
+
+            that.#templatePages.push(templatePage);
 
             that.#options.set("menu", menu);
 
@@ -176,39 +226,12 @@ class Enginær {
                 return a["order"] - b["order"];
             });
 
-            that.#metadaEnrichers.forEach(f => {
-                var key = f["key"];
-                var handler = f["handler"];
-
-                if (!metadata.has(key)) {
-                    var message = "'" + key + "' does not exist in metadata.";
-                    cb(new PluginError("enginær", message), file);
-                }
-
-                var value = metadata.get(key);
-                value = handler.call(null, value, config);
-
-                metadata.set(key, value);
-            });
-
-            that.#generateEnrichers.forEach(f => {
-                var sourceKey = f["sourceKey"];
-                var targetKey = f["targetKey"]
-                var handler = f["handler"];
-
-                if (!metadata.has(sourceKey)) {
-                    var message = "'" + sourceKey + "' does not exist in metadata.";
-                    cb(new PluginError("enginær", message), file);
-                }
-
-                var value = handler.call(null, metadata.get(sourceKey), config);
-                metadata.set(targetKey, value);
-            });
-
             // add page metadata
             metadata.forEach((v, k) => {
                 templateData[k] = v;
             });
+
+            templateData["pages"] = that.#templatePages;
 
             var permalink = templateData["permalink"];
             var output = mustache.render(template, templateData, templates);
@@ -315,7 +338,7 @@ class Enginær {
             }
 
             var value = kvp[1];
-            
+
             metadata.set(key, value);
         });
 

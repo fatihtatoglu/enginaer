@@ -33,7 +33,7 @@ enginær.setOptions({
                 "key": "tags",
                 "type": "metadata",
                 "handler": function (value) {
-                    return value.split().map(v => {
+                    return value.split(" ").map(v => {
                         return v.replace(/\_/g, " ");
                     });
                 }
