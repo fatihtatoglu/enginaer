@@ -9,6 +9,8 @@ const Vinyl = require("vinyl");
 const marked = require("marked");
 const mustache = require("mustache");
 
+const PLUGIN_NAME = "enginær";
+
 class Enginær {
 
     #options;
@@ -63,7 +65,15 @@ class Enginær {
 
     setOptions(options) {
         if (typeof options !== "object") {
-            throw new PluginError("enginær", "options must be an object");
+            throw new PluginError(PLUGIN_NAME, "The options must be an object.");
+        }
+
+        if (!options["config"]) {
+            throw new PluginError(PLUGIN_NAME, "The options must contain 'config' object.");
+        }
+
+        if (!options["config"]["base-url"]) {
+            throw new PluginError(PLUGIN_NAME, "The config object must contain 'base-url' key.");
         }
 
         this.#options = new Map();
@@ -71,7 +81,28 @@ class Enginær {
         var that = this;
         for (const key in options) {
             if (that.#options.has(key)) {
-                throw new PluginError("enginær", "the option has already added.");
+                throw new PluginError(PLUGIN_NAME, "The option has already added.");
+            }
+
+            if (key === "page") {
+                var enrichers = options[key]["enrichers"];
+
+                enrichers.forEach(function (item) {
+                    var handler = item["handler"];
+                    if (typeof handler !== "function") {
+                        throw new PluginError(PLUGIN_NAME, "The handler of the enricher must be a function.");
+                    }
+                });
+            }
+
+            if (key === "template") {
+                var helpers = options[key]["helpers"];
+                for (var k in helpers) {
+                    var helper = helpers[k];
+                    if (typeof helper !== "function") {
+                        throw new PluginError(PLUGIN_NAME, "The template helper must be a function.");
+                    }
+                }
             }
 
             that.#options.set(key, options[key]);
@@ -128,8 +159,8 @@ class Enginær {
                 var handler = f["handler"];
 
                 if (!metadata.has(key)) {
-                    var message = "'" + key + "' does not exist in metadata.";
-                    cb(new PluginError("enginær", message), file);
+                    var message = "The '" + key + "' does not exist in metadata.";
+                    cb(new PluginError(PLUGIN_NAME, message), file);
                 }
 
                 var value = metadata.get(key);
@@ -144,8 +175,8 @@ class Enginær {
                 var handler = f["handler"];
 
                 if (!metadata.has(sourceKey)) {
-                    var message = "'" + sourceKey + "' does not exist in metadata.";
-                    cb(new PluginError("enginær", message), file);
+                    var message = "The '" + sourceKey + "' does not exist in metadata.";
+                    cb(new PluginError(PLUGIN_NAME, message), file);
                 }
 
                 var value = handler.call(null, metadata.get(sourceKey), config);
@@ -268,21 +299,21 @@ class Enginær {
     #checkPageFileSanity(file, cb) {
         if (file.isNull()) {
             var message = "Page file is null.";
-            cb(new PluginError("enginær", message), file);
+            cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (file.isStream()) {
-            var message = "Stream is not supported";
-            cb(new PluginError("enginær", message), file);
+            var message = "Stream is not supported.";
+            cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (!file.contents) {
-            var message = "'content' property is missing.";
-            cb(new PluginError("enginær", message), file);
+            var message = "The 'content' property is missing.";
+            cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
@@ -290,7 +321,7 @@ class Enginær {
         var content = file.contents.toString();
         if (!content.startsWith("---")) {
             var message = "File must be started with metadata section.";
-            cb(new PluginError("enginær", message), file);
+            cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
@@ -301,21 +332,21 @@ class Enginær {
     #checkTemplateFileSanity(file, cb) {
         if (file.isNull()) {
             var message = "Template file is null.";
-            cb(new PluginError("enginær", message), file);
+            cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (file.isStream()) {
-            var message = "Stream is not supported";
-            cb(new PluginError("enginær", message), file);
+            var message = "Stream is not supported.";
+            cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (!file.contents) {
-            var message = "'content' property is missing.";
-            cb(new PluginError("enginær", message), file);
+            var message = "The 'content' property is missing.";
+            cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
