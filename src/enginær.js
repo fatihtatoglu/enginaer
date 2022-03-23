@@ -170,6 +170,9 @@ class Enginær {
             });
 
             that.#templatePages.push(templatePage);
+            that.#templatePages.sort(function (a, b) {
+                return new Date(a["date"]) - new Date(b["date"]);
+            });
 
             that.#options.set("menu", menu);
 
