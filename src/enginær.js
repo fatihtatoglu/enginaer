@@ -100,8 +100,13 @@ class Enginær {
             var fileRawContent = file.contents.toString();
 
             var metadata = that.#parsePageMetadata(fileRawContent);
-            var pageContent = that.#parsePageContent(fileRawContent);
+            var isPublished = metadata.get("published");
+            if (isPublished !== "true") {
+                cb(null, file);
+                return;
+            }
 
+            var pageContent = that.#parsePageContent(fileRawContent);
             var htmlContent = marked.parse(pageContent);
 
             that.#rawEnrichers.forEach(f => {
