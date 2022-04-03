@@ -93,7 +93,7 @@ enginær.setOptions({
             },
             {
                 "type": "menu",
-                "handler": function (metadata, menu, config) {
+                "handler": function (metadata, menu, _config) {
 
                     var posts = menu["posts"] || {
                         "title": "Posts",
