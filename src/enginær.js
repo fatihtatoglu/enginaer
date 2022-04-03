@@ -296,22 +296,24 @@ class Enginaer {
     }
 
     #checkPageFileSanity(file, cb) {
+        let message;
+
         if (file.isNull()) {
-            var message = "Page file is null.";
+            message = "Page file is null.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (file.isStream()) {
-            var message = "Stream is not supported.";
+            message = "Stream is not supported.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (!file.contents) {
-            var message = "The 'content' property is missing.";
+            message = "The 'content' property is missing.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
@@ -319,7 +321,7 @@ class Enginaer {
 
         var content = file.contents.toString();
         if (!content.startsWith("---")) {
-            var message = "File must be started with metadata section.";
+            message = "File must be started with metadata section.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
@@ -330,6 +332,7 @@ class Enginaer {
 
     #checkTemplateFileSanity(file, cb) {
         let message;
+
         if (file.isNull()) {
             message = "Template file is null.";
             cb(new PluginError(PLUGIN_NAME, message), file);
