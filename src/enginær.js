@@ -11,9 +11,13 @@ const mustache = require("mustache");
 
 const PLUGIN_NAME = "enginær";
 
-class Enginær {
+class Enginaer {
 
     #options;
+
+    /**
+     * @type {Map<string,object>}
+     */
     #pages;
     #enrichers;
     #templatePages;
@@ -23,8 +27,7 @@ class Enginær {
     }
 
     get outputPath() {
-        var outputPath = this.#options.get("output");
-        return outputPath;
+        return this.#options.get("output");
     }
 
     get assetPath() {
@@ -64,17 +67,7 @@ class Enginær {
     }
 
     setOptions(options) {
-        if (typeof options !== "object") {
-            throw new PluginError(PLUGIN_NAME, "The options must be an object.");
-        }
-
-        if (!options["config"]) {
-            throw new PluginError(PLUGIN_NAME, "The options must contain 'config' object.");
-        }
-
-        if (!options["config"]["base-url"]) {
-            throw new PluginError(PLUGIN_NAME, "The config object must contain 'base-url' key.");
-        }
+        this.validateOption(options);
 
         this.#options = new Map();
 
@@ -87,25 +80,47 @@ class Enginær {
             if (key === "page") {
                 var enrichers = options[key]["enrichers"];
 
-                enrichers.forEach(function (item) {
-                    var handler = item["handler"];
-                    if (typeof handler !== "function") {
-                        throw new PluginError(PLUGIN_NAME, "The handler of the enricher must be a function.");
-                    }
-                });
+                that.validatePageEnrichers(enrichers);
             }
 
             if (key === "template") {
                 var helpers = options[key]["helpers"];
-                for (var k in helpers) {
-                    var helper = helpers[k];
-                    if (typeof helper !== "function") {
-                        throw new PluginError(PLUGIN_NAME, "The template helper must be a function.");
-                    }
-                }
+                that.validateTemplateHelpers(helpers);
             }
 
             that.#options.set(key, options[key]);
+        }
+    }
+
+    validateOption(options) {
+        if (typeof options !== "object") {
+            throw new PluginError(PLUGIN_NAME, "The options must be an object.");
+        }
+
+        if (!options["config"]) {
+            throw new PluginError(PLUGIN_NAME, "The options must contain 'config' object.");
+        }
+
+        if (!options["config"]["base-url"]) {
+            throw new PluginError(PLUGIN_NAME, "The config object must contain 'base-url' key.");
+        }
+    }
+
+    validatePageEnrichers(enrichers) {
+        enrichers.forEach((item) => {
+            var handler = item["handler"];
+            if (typeof handler !== "function") {
+                throw new PluginError(PLUGIN_NAME, "The handler of the enricher must be a function.");
+            }
+        });
+    }
+
+    validateTemplateHelpers(helpers) {
+        for (var k in helpers) {
+            var helper = helpers[k];
+            if (typeof helper !== "function") {
+                throw new PluginError(PLUGIN_NAME, "The template helper must be a function.");
+            }
         }
     }
 
@@ -121,7 +136,7 @@ class Enginær {
 
         this.#pages = new Map();
         this.#templatePages = [];
-        return through.obj(function (file, encoding, cb) {
+        return through.obj((file, _encoding, cb) => {
             if (!that.#checkPageFileSanity(file, cb)) {
                 return;
             }
@@ -171,7 +186,7 @@ class Enginær {
 
             that.#generateEnrichers.forEach(f => {
                 var sourceKey = f["sourceKey"];
-                var targetKey = f["targetKey"]
+                var targetKey = f["targetKey"];
                 var handler = f["handler"];
 
                 if (!metadata.has(sourceKey)) {
@@ -206,9 +221,7 @@ class Enginær {
             });
 
             that.#templatePages.push(templatePage);
-            that.#templatePages.sort(function (a, b) {
-                return new Date(a["date"]) - new Date(b["date"]);
-            });
+            that.#templatePages.sort((a, b) => new Date(a["date"]) - new Date(b["date"]));
 
             that.#options.set("menu", menu);
 
@@ -221,7 +234,7 @@ class Enginær {
         var templateConfig = this.#options.get("template");
         templateConfig["cache"] = {};
 
-        return through.obj(function (file, encoding, cb) {
+        return through.obj((file, _encoding, cb) => {
             if (!that.#checkTemplateFileSanity(file, cb)) {
                 return;
             }
@@ -244,7 +257,7 @@ class Enginær {
         var config = this.#options.get("config");
 
         var vinylFiles = [];
-        for (const [key, value] of this.#pages) {
+        for (const [, value] of this.#pages) {
             var metadata = value["metadata"];
 
             var templateData = { ...config, ...mustacheConfig };
@@ -261,9 +274,7 @@ class Enginær {
 
             // set menu
             templateData["menu"] = Object.values(that.#options.get("menu"));
-            templateData["menu"] = templateData["menu"].sort(function (a, b) {
-                return a["order"] - b["order"];
-            });
+            templateData["menu"] = templateData["menu"].sort((a, b) => a["order"] - b["order"]);
 
             // add page metadata
             metadata.forEach((v, k) => {
@@ -283,11 +294,11 @@ class Enginær {
             }));
         }
 
-        var stream = through.obj(function (file, encoding, cb) {
+        var stream = through.obj((file, _encoding, cb) => {
             cb(null, file);
         });
 
-        vinylFiles.forEach(function (vinylFile) {
+        vinylFiles.forEach((vinylFile) => {
             stream.write(vinylFile);
         });
 
@@ -297,22 +308,24 @@ class Enginær {
     }
 
     #checkPageFileSanity(file, cb) {
+        let message;
+
         if (file.isNull()) {
-            var message = "Page file is null.";
+            message = "Page file is null.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (file.isStream()) {
-            var message = "Stream is not supported.";
+            message = "Stream is not supported.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (!file.contents) {
-            var message = "The 'content' property is missing.";
+            message = "The 'content' property is missing.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
@@ -320,7 +333,7 @@ class Enginær {
 
         var content = file.contents.toString();
         if (!content.startsWith("---")) {
-            var message = "File must be started with metadata section.";
+            message = "File must be started with metadata section.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
@@ -330,22 +343,24 @@ class Enginær {
     }
 
     #checkTemplateFileSanity(file, cb) {
+        let message;
+
         if (file.isNull()) {
-            var message = "Template file is null.";
+            message = "Template file is null.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (file.isStream()) {
-            var message = "Stream is not supported.";
+            message = "Stream is not supported.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (!file.contents) {
-            var message = "The 'content' property is missing.";
+            message = "The 'content' property is missing.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
@@ -365,7 +380,7 @@ class Enginær {
 
         var metadata = new Map();
         var data = metadataSection.replace(/\r/g, "").split("\n");
-        data.forEach(function (item) {
+        data.forEach((item) => {
             if (item.length === 0) {
                 return;
             }
@@ -386,15 +401,13 @@ class Enginær {
 
     #parsePageContent(fileRawContent) {
         var metadataEndIndex = fileRawContent.indexOf("---", 1);
-        var pageContent = fileRawContent.substring(metadataEndIndex + 3);
-
-        return pageContent;
+        return fileRawContent.substring(metadataEndIndex + 3);
     }
 
     #getEnricher(type) {
         if (!this.#enrichers[type]) {
             var enrichers = this.#options.get("page")["enrichers"];
-            return enrichers.filter(function (e) {
+            return enrichers.filter((e) => {
                 if (e["type"] === type) {
                     return e;
                 }
@@ -405,4 +418,4 @@ class Enginær {
     }
 }
 
-module.exports = new Enginær();
+module.exports = new Enginaer();
