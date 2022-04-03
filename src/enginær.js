@@ -107,7 +107,7 @@ class Enginaer {
     }
 
     validatePageEnrichers(enrichers) {
-        enrichers.forEach(function (item) {
+        enrichers.forEach((item) => {
             var handler = item["handler"];
             if (typeof handler !== "function") {
                 throw new PluginError(PLUGIN_NAME, "The handler of the enricher must be a function.");
@@ -136,7 +136,7 @@ class Enginaer {
 
         this.#pages = new Map();
         this.#templatePages = [];
-        return through.obj(function (file, _encoding, cb) {
+        return through.obj((file, _encoding, cb) => {
             if (!that.#checkPageFileSanity(file, cb)) {
                 return;
             }
@@ -186,7 +186,7 @@ class Enginaer {
 
             that.#generateEnrichers.forEach(f => {
                 var sourceKey = f["sourceKey"];
-                var targetKey = f["targetKey"]
+                var targetKey = f["targetKey"];
                 var handler = f["handler"];
 
                 if (!metadata.has(sourceKey)) {
@@ -221,9 +221,7 @@ class Enginaer {
             });
 
             that.#templatePages.push(templatePage);
-            that.#templatePages.sort(function (a, b) {
-                return new Date(a["date"]) - new Date(b["date"]);
-            });
+            that.#templatePages.sort((a, b) => new Date(a["date"]) - new Date(b["date"]));
 
             that.#options.set("menu", menu);
 
@@ -236,7 +234,7 @@ class Enginaer {
         var templateConfig = this.#options.get("template");
         templateConfig["cache"] = {};
 
-        return through.obj(function (file, _encoding, cb) {
+        return through.obj((file, _encoding, cb) => {
             if (!that.#checkTemplateFileSanity(file, cb)) {
                 return;
             }
@@ -276,9 +274,7 @@ class Enginaer {
 
             // set menu
             templateData["menu"] = Object.values(that.#options.get("menu"));
-            templateData["menu"] = templateData["menu"].sort(function (a, b) {
-                return a["order"] - b["order"];
-            });
+            templateData["menu"] = templateData["menu"].sort((a, b) => a["order"] - b["order"]);
 
             // add page metadata
             metadata.forEach((v, k) => {
@@ -298,11 +294,11 @@ class Enginaer {
             }));
         }
 
-        var stream = through.obj(function (file, _encoding, cb) {
+        var stream = through.obj((file, _encoding, cb) => {
             cb(null, file);
         });
 
-        vinylFiles.forEach(function (vinylFile) {
+        vinylFiles.forEach((vinylFile) => {
             stream.write(vinylFile);
         });
 
@@ -384,7 +380,7 @@ class Enginaer {
 
         var metadata = new Map();
         var data = metadataSection.replace(/\r/g, "").split("\n");
-        data.forEach(function (item) {
+        data.forEach((item) => {
             if (item.length === 0) {
                 return;
             }
@@ -411,7 +407,7 @@ class Enginaer {
     #getEnricher(type) {
         if (!this.#enrichers[type]) {
             var enrichers = this.#options.get("page")["enrichers"];
-            return enrichers.filter(function (e) {
+            return enrichers.filter((e) => {
                 if (e["type"] === type) {
                     return e;
                 }
