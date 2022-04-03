@@ -329,22 +329,23 @@ class Enginaer {
     }
 
     #checkTemplateFileSanity(file, cb) {
+        let message;
         if (file.isNull()) {
-            var message = "Template file is null.";
+            message = "Template file is null.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (file.isStream()) {
-            var message = "Stream is not supported.";
+            message = "Stream is not supported.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
         }
 
         if (!file.contents) {
-            var message = "The 'content' property is missing.";
+            message = "The 'content' property is missing.";
             cb(new PluginError(PLUGIN_NAME, message), file);
 
             return false;
