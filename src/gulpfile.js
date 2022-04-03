@@ -6,7 +6,7 @@ const outputPath = "../npm/";
 function cleanAll() {
     return src([outputPath], { allowEmpty: true })
         .pipe(clean({ force: true }));
-};
+}
 
 function copyLibrary() {
     return src(["enginær.js", "package.json"])
