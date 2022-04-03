@@ -137,7 +137,7 @@ enginær.setOptions({
             },
             "url": function () {
                 if (this.url) {
-                    return this.url;
+                    return this.url.toString();
                 }
 
                 return "javascript:;";
