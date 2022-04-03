@@ -389,9 +389,7 @@ class Enginaer {
 
     #parsePageContent(fileRawContent) {
         var metadataEndIndex = fileRawContent.indexOf("---", 1);
-        var pageContent = fileRawContent.substring(metadataEndIndex + 3);
-
-        return pageContent;
+        return fileRawContent.substring(metadataEndIndex + 3);
     }
 
     #getEnricher(type) {
