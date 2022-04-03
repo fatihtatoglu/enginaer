@@ -23,8 +23,7 @@ class Enginaer {
     }
 
     get outputPath() {
-        var outputPath = this.#options.get("output");
-        return outputPath;
+        return this.#options.get("output");
     }
 
     get assetPath() {
