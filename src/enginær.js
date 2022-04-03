@@ -11,7 +11,7 @@ const mustache = require("mustache");
 
 const PLUGIN_NAME = "enginær";
 
-class Enginær {
+class Enginaer {
 
     #options;
     #pages;
@@ -405,4 +405,4 @@ class Enginær {
     }
 }
 
-module.exports = new Enginær();
+module.exports = new Enginaer();
