@@ -120,7 +120,7 @@ class Enginaer {
 
         this.#pages = new Map();
         this.#templatePages = [];
-        return through.obj(function (file, encoding, cb) {
+        return through.obj(function (file, _encoding, cb) {
             if (!that.#checkPageFileSanity(file, cb)) {
                 return;
             }
@@ -220,7 +220,7 @@ class Enginaer {
         var templateConfig = this.#options.get("template");
         templateConfig["cache"] = {};
 
-        return through.obj(function (file, encoding, cb) {
+        return through.obj(function (file, _encoding, cb) {
             if (!that.#checkTemplateFileSanity(file, cb)) {
                 return;
             }
@@ -282,7 +282,7 @@ class Enginaer {
             }));
         }
 
-        var stream = through.obj(function (file, encoding, cb) {
+        var stream = through.obj(function (file, _encoding, cb) {
             cb(null, file);
         });
 
