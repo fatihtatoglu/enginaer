@@ -8,6 +8,8 @@ const Vinyl = require("vinyl");
 
 const marked = require("marked");
 const mustache = require("mustache");
+const Page = require("./lib/page");
+const { cwd } = require("process");
 
 const PLUGIN_NAME = "enginær";
 
@@ -105,23 +107,28 @@ class Enginaer {
         this.#pages = new Map();
         this.#templatePages = [];
         return through.obj((file, _encoding, cb) => {
-            if (!that.#checkPageFileSanity(file, cb)) {
+
+            var page = new Page(file);
+
+            let error = page.validate();
+            if (error) {
+                cb(new PluginError(PLUGIN_NAME, error.message), file);
                 return;
             }
 
-            var pageName = that.#getFileName(file);
+            page.process();
 
-            var fileRawContent = file.contents.toString();
-
-            var metadata = that.#parsePageMetadata(fileRawContent);
-            var isPublished = metadata.get("published");
-            if (isPublished !== "true") {
+            if (!page.published) {
                 cb(null, file);
                 return;
             }
 
-            var pageContent = that.#parsePageContent(fileRawContent);
-            var htmlContent = marked.parse(pageContent);
+            console.log(page);
+
+            var pageName = page.name;
+            var fileRawContent = file.contents.toString();
+            var metadata = that.#parsePageMetadata(fileRawContent);
+            var htmlContent = page.content;
 
             that.#rawEnrichers.forEach(f => {
                 var key = f["key"];
