@@ -14,6 +14,10 @@ const PLUGIN_NAME = "enginær";
 class Enginaer {
 
     #options;
+
+    /**
+     * @type {Map<string,object>}
+     */
     #pages;
     #enrichers;
     #templatePages;
@@ -243,7 +247,7 @@ class Enginaer {
         var config = this.#options.get("config");
 
         var vinylFiles = [];
-        for (const [key, value] of this.#pages) {
+        for (const [, value] of this.#pages) {
             var metadata = value["metadata"];
 
             var templateData = { ...config, ...mustacheConfig };
