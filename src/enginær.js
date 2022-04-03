@@ -67,7 +67,7 @@ class Enginaer {
     }
 
     setOptions(options) {
-        this.validateOption(options);
+        this.#validateOption(options);
 
         this.#options = new Map();
 
@@ -80,47 +80,15 @@ class Enginaer {
             if (key === "page") {
                 var enrichers = options[key]["enrichers"];
 
-                that.validatePageEnrichers(enrichers);
+                that.#validatePageEnrichers(enrichers);
             }
 
             if (key === "template") {
                 var helpers = options[key]["helpers"];
-                that.validateTemplateHelpers(helpers);
+                that.#validateTemplateHelpers(helpers);
             }
 
             that.#options.set(key, options[key]);
-        }
-    }
-
-    validateOption(options) {
-        if (typeof options !== "object") {
-            throw new PluginError(PLUGIN_NAME, "The options must be an object.");
-        }
-
-        if (!options["config"]) {
-            throw new PluginError(PLUGIN_NAME, "The options must contain 'config' object.");
-        }
-
-        if (!options["config"]["base-url"]) {
-            throw new PluginError(PLUGIN_NAME, "The config object must contain 'base-url' key.");
-        }
-    }
-
-    validatePageEnrichers(enrichers) {
-        enrichers.forEach((item) => {
-            var handler = item["handler"];
-            if (typeof handler !== "function") {
-                throw new PluginError(PLUGIN_NAME, "The handler of the enricher must be a function.");
-            }
-        });
-    }
-
-    validateTemplateHelpers(helpers) {
-        for (var k in helpers) {
-            var helper = helpers[k];
-            if (typeof helper !== "function") {
-                throw new PluginError(PLUGIN_NAME, "The template helper must be a function.");
-            }
         }
     }
 
@@ -415,6 +383,38 @@ class Enginaer {
         }
 
         return this.#enrichers[type];
+    }
+
+    #validateOption(options) {
+        if (typeof options !== "object") {
+            throw new PluginError(PLUGIN_NAME, "The options must be an object.");
+        }
+
+        if (!options["config"]) {
+            throw new PluginError(PLUGIN_NAME, "The options must contain 'config' object.");
+        }
+
+        if (!options["config"]["base-url"]) {
+            throw new PluginError(PLUGIN_NAME, "The config object must contain 'base-url' key.");
+        }
+    }
+
+    #validatePageEnrichers(enrichers) {
+        enrichers.forEach((item) => {
+            var handler = item["handler"];
+            if (typeof handler !== "function") {
+                throw new PluginError(PLUGIN_NAME, "The handler of the enricher must be a function.");
+            }
+        });
+    }
+
+    #validateTemplateHelpers(helpers) {
+        for (var k in helpers) {
+            var helper = helpers[k];
+            if (typeof helper !== "function") {
+                throw new PluginError(PLUGIN_NAME, "The template helper must be a function.");
+            }
+        }
     }
 }
 
