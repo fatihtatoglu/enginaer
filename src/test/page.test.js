@@ -163,7 +163,7 @@ describe("gulp-enginaer-page", () => {
 
         it("should return an error when mandatory metadata is missing.", () => {
             // Arrange
-            let content = getContent();
+            let content = getMissingMatadataContent();
             let file = createFile(content, "sample.md");
             let page = new Page(file);
 
@@ -174,6 +174,65 @@ describe("gulp-enginaer-page", () => {
             // Assert
             error.should.not.null;
             error.message.should.be.string("The mandatory metadata is missing.");
+        });
+
+        it("should not return an error when process is successfully completed", function () {
+            // Arrange
+            let content = getContent();
+            let file = createFile(content, "sample.md");
+            let page = new Page(file);
+
+            // Act
+            page.validate();
+            let result = page.process();
+
+            // Assert
+            expect(result).undefined;
+        });
+
+        it("should trim metadata key when has whitespaces.", () => {
+            // Arrange
+            let content = `---
+            layout: page
+            published: false
+            author: Fatih Tatoğlu
+            permalink: ./post/sample.html
+            ---
+            # Heading`;
+
+            let file = createFile(content, "sample.md");
+            let page = new Page(file);
+
+            // Act
+            page.validate();
+            page.process();
+
+            // Assert
+            page.get("layout").should.to.be.string("page");
+            page.get("published").should.to.be.string("false");
+            page.get("author").should.to.be.string("Fatih Tatoğlu");
+            page.get("permalink").should.to.be.string("./post/sample.html");
+        });
+
+        it ("should ignore metadata with empty key.", () => {
+            // Arrange
+            let content = `---
+                layout: page
+                published: false
+                author: Fatih Tatoğlu
+                permalink: ./post/sample.html
+                ---
+                # Heading`;
+
+            let file = createFile(content, "sample.md");
+            let page = new Page(file);
+
+            // Act
+            page.validate();
+            page.process();
+
+            // Assert
+            page.has("").should.false;
         });
     });
 
@@ -233,7 +292,83 @@ describe("gulp-enginaer-page", () => {
             error.message.should.be.string("Test error.");
         });
     });
+
+    describe("published", () => {
+        const tests = [
+            {
+                args: `---
+layout: page
+published: true
+author: Author
+date: 2000-01-01
+permalink: sample.html
+---
+# Test`, expected: true, name: "'true'"
+            },
+            {
+                args: `---
+layout: page
+published: false
+author: Author
+date: 2000-01-01
+permalink: sample.html
+---
+# Test`, expected: false, name: "'false'"
+            },
+            {
+                args: `---
+layout: page
+published: no
+author: Author
+date: 2000-01-01
+permalink: sample.html
+---
+# Test`, expected: false, name: "'no'"
+            },
+            {
+                args: `---
+layout: page
+published: yes
+author: Author
+date: 2000-01-01
+permalink: sample.html
+---
+# Test`, expected: false, name: "'yes'"
+            },
+            {
+                args: `---
+layout: page
+published: 
+author: Author
+date: 2000-01-01
+permalink: sample.html
+---
+# Test`, expected: false, name: "blank"
+            }
+        ];
+
+        tests.forEach(({ args, expected, name }) => {
+
+            it(`should return ${expected} when the pusblied key is ${name}.`, () => {
+                // Arrange
+                let content = args;
+
+                let file = createFile(content, "sample.md");
+                let page = new Page(file);
+
+                // Act
+                page.validate();
+                page.process();
+
+                // Assert
+                page.published.should.be.equal(expected);
+            });
+
+        });
+    });
 });
+
+// Helper functions.
 
 function createFile(content, fileName) {
     return new Vinyl({
@@ -245,6 +380,25 @@ function createFile(content, fileName) {
 }
 
 function getContent() {
+    return `---
+layout: page
+published: true
+author: Fatih Tatoğlu
+permalink: about.html
+date: 2000-01-01 00:00:00
+---
+# Heading
+
+I really like using Markdown.
+            
+I think I'll use it to format all of my documents from now on.
+
+## Heading2
+
+Curabitur malesuada, nibh eget ornare venenatis, sapien massa rutrum arcu, a euismod ex risus vel tortor. Aliquam quis posuere ligula. Integer nec euismod ante. Cras malesuada a nisi sit amet laoreet.`;
+}
+
+function getMissingMatadataContent() {
     return `---
 layout: page
 published: true

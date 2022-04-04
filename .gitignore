@@ -352,3 +352,5 @@ MigrationBackup/
 package-lock.json
 dist/
 npm/
+coverage/
+.nyc_output/

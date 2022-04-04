@@ -116,7 +116,11 @@ class Enginaer {
                 return;
             }
 
-            page.process();
+            error = page.process();
+            if (error) {
+                cb(new PluginError(PLUGIN_NAME, error.message), file);
+                return;
+            }
 
             if (!page.published) {
                 cb(null, file);

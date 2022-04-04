@@ -18,7 +18,7 @@ class Page {
     #content;
 
     /**
-     * @type {Map}
+     * @type {Map<string, *>}
      */
     #metadata;
 
@@ -65,6 +65,7 @@ class Page {
     /**
      * Accepts the page visitor object.
      * @param {BasePageVisitor} visitor The visitor for changing page object.
+     * @returns {Error | undefined}
      */
     accept(visitor) {
         return visitor.visit(this);
@@ -72,7 +73,7 @@ class Page {
 
     /**
      * Processes the page.
-     * @returns {Error | null}
+     * @returns {Error | undefined}
      */
     process() {
         var that = this;
@@ -91,7 +92,7 @@ class Page {
                 return;
             }
 
-            var pair = item.split(": ");
+            var pair = item.trim().split(": ");
             var key = pair[0];
             if (key === "") {
                 return;
@@ -105,8 +106,6 @@ class Page {
         if (!this.#checkMetadata()) {
             return new Error("The mandatory metadata is missing.");
         }
-
-        return null;
     }
 
     /**

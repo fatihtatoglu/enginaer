@@ -7,7 +7,7 @@ class BasePageVisitor {
      * @param {Page} page The page object.
      * @returns {Error | undefined}
      */
-    visit(page, setMetadata) {
+    visit(page) {
         return undefined;
     }
 }
