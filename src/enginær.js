@@ -9,7 +9,6 @@ const Vinyl = require("vinyl");
 const marked = require("marked");
 const mustache = require("mustache");
 const Page = require("./lib/page");
-const { cwd } = require("process");
 const Template = require("./lib/template");
 
 const PLUGIN_NAME = "enginær";
@@ -292,73 +291,6 @@ class Enginaer {
         return stream;
     }
 
-    #checkPageFileSanity(file, cb) {
-        let message;
-
-        if (file.isNull()) {
-            message = "Page file is null.";
-            cb(new PluginError(PLUGIN_NAME, message), file);
-
-            return false;
-        }
-
-        if (file.isStream()) {
-            message = "Stream is not supported.";
-            cb(new PluginError(PLUGIN_NAME, message), file);
-
-            return false;
-        }
-
-        if (!file.contents) {
-            message = "The 'content' property is missing.";
-            cb(new PluginError(PLUGIN_NAME, message), file);
-
-            return false;
-        }
-
-        var content = file.contents.toString();
-        if (!content.startsWith("---")) {
-            message = "File must be started with metadata section.";
-            cb(new PluginError(PLUGIN_NAME, message), file);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    #checkTemplateFileSanity(file, cb) {
-        let message;
-
-        if (file.isNull()) {
-            message = "Template file is null.";
-            cb(new PluginError(PLUGIN_NAME, message), file);
-
-            return false;
-        }
-
-        if (file.isStream()) {
-            message = "Stream is not supported.";
-            cb(new PluginError(PLUGIN_NAME, message), file);
-
-            return false;
-        }
-
-        if (!file.contents) {
-            message = "The 'content' property is missing.";
-            cb(new PluginError(PLUGIN_NAME, message), file);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    #getFileName(file) {
-        var fileInfo = path.parse(file.path);
-        return fileInfo.name;
-    }
-
     #parsePageMetadata(fileRawContent) {
         var metadataEndIndex = fileRawContent.indexOf("---", 1);
         var metadataSection = fileRawContent.substring(4, metadataEndIndex);
@@ -382,11 +314,6 @@ class Enginaer {
         });
 
         return metadata;
-    }
-
-    #parsePageContent(fileRawContent) {
-        var metadataEndIndex = fileRawContent.indexOf("---", 1);
-        return fileRawContent.substring(metadataEndIndex + 3);
     }
 
     #getEnricher(type) {
