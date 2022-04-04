@@ -10,6 +10,7 @@ const marked = require("marked");
 const mustache = require("mustache");
 const Page = require("./lib/page");
 const { cwd } = require("process");
+const Template = require("./lib/template");
 
 const PLUGIN_NAME = "enginær";
 
@@ -109,6 +110,7 @@ class Enginaer {
         return through.obj((file, _encoding, cb) => {
 
             var page = new Page(file);
+            
 
             let error = page.validate();
             if (error) {
@@ -209,18 +211,22 @@ class Enginaer {
     }
 
     setTemplates() {
-        var that = this;
         var templateConfig = this.#options.get("template");
         templateConfig["cache"] = {};
 
         return through.obj((file, _encoding, cb) => {
-            if (!that.#checkTemplateFileSanity(file, cb)) {
+
+            var template = new Template(file);
+
+            let error = template.validate();
+            if (error) {
+                cb(new PluginError(PLUGIN_NAME, error.message), file);
                 return;
             }
-            var name = that.#getFileName(file);
-            var content = file.contents.toString();
 
-            templateConfig["cache"][name] = content;
+            template.process();
+
+            templateConfig["cache"][template.name] = template.content;
 
             cb(null, file);
         });

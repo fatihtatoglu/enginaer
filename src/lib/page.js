@@ -1,21 +1,13 @@
 "use strict";
 
+const Resource = require("./resource");
+
 const Vinyl = require("vinyl");
 const marked = require("marked");
 
 const METADATA_TOKEN = "---";
 
-class Page {
-
-    /**
-     * @type {Vinyl}
-     */
-    #file;
-
-    /**
-     * @type {string}
-     */
-    #content;
+class Page extends Resource {
 
     /**
      * @type {Map<string, *>}
@@ -27,10 +19,8 @@ class Page {
      * @param {Vinyl} file The file object.
      */
     constructor(file, opt_markedConfig) {
-        this.#file = file;
-
+        super(file);
         this.#metadata = new Map();
-        this.#content = "";
 
         opt_markedConfig = opt_markedConfig || {
             breaks: true,
@@ -39,20 +29,6 @@ class Page {
         };
 
         marked.setOptions(opt_markedConfig);
-    }
-
-    /**
-     * @returns {string}
-     */
-    get name() {
-        return this.#file.basename.replace(this.#file.extname, "");
-    }
-
-    /**
-     * @returns {string}
-     */
-    get content() {
-        return this.#content;
     }
 
     /**
@@ -72,19 +48,37 @@ class Page {
     }
 
     /**
+     * Validates the page object.
+     * @returns {Error | undefined}
+     */
+    validate() {
+        var result = super.validate();
+        if (result) {
+            return result;
+        }
+
+        let content = this.file.contents.toString();
+        if (!content.startsWith("---")) {
+            return new Error("The file must be started with metadata section.");
+        }
+    }
+
+    /**
      * Processes the page.
      * @returns {Error | undefined}
      */
     process() {
+        super.process();
+        
         var that = this;
 
-        let rawContent = this.#file.contents.toString();
+        let rawContent = this.file.contents.toString();
 
         let index = rawContent.indexOf(METADATA_TOKEN, 1);
         let metadataSection = rawContent.substring(4, index);
         let pageSection = rawContent.substring(index + 3);
 
-        this.#content = marked.parse(pageSection);
+        this.content = marked.parse(pageSection);
 
         var data = metadataSection.replace(/\r/g, "").split("\n");
         data.forEach((item) => {
@@ -106,31 +100,6 @@ class Page {
         if (!this.#checkMetadata()) {
             return new Error("The mandatory metadata is missing.");
         }
-    }
-
-    /**
-     * Validates the page object.
-     * @returns {Error | null}
-     */
-    validate() {
-        if (!this.#file) {
-            return new Error("The file must be provided.");
-        }
-
-        if (this.#file.isNull()) {
-            return new Error("The file is empty.");
-        }
-
-        if (this.#file.isStream()) {
-            return new Error("The stream is not supported.");
-        }
-
-        let content = this.#file.contents.toString();
-        if (!content.startsWith("---")) {
-            return new Error("The file must be started with metadata section.");
-        }
-
-        return null;
     }
 
     /**

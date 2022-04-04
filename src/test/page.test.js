@@ -1,69 +1,15 @@
 "use strict";
 
+require("./helper");
+
 const Page = require("../lib/page");
 const BasePageVisitor = require("../lib/pageVisitor");
-
-const Vinyl = require("vinyl");
-const Readable = require("stream").Readable;
 
 const { expect } = require("chai");
 require('chai').should();
 
 describe("gulp-enginaer-page", () => {
     describe("validate", () => {
-        it("should return an error when the file is not provided.", () => {
-
-            // Arrange
-            var file;
-            var page = new Page(file);
-
-            // Act
-            var error = page.validate();
-
-            // Assert
-            error.should.not.null;
-            error.message.should.be.string("The file must be provided.");
-        });
-
-        it("should return an error when the file is empty.", () => {
-
-            // Arrange
-            var file = new Vinyl();
-            var page = new Page(file);
-
-            // Act
-            var error = page.validate();
-
-            // Assert
-            error.should.not.null;
-            error.message.should.be.string("The file is empty.");
-        });
-
-        it("should return an error when the file is streaming.", () => {
-
-            // Arrange
-            var content = "# Heading";
-
-            var stream = new Readable();
-            stream.push(content);
-            stream.push(null);
-
-            var file = new Vinyl({
-                cwd: "",
-                base: undefined,
-                path: "stream.md",
-                contents: stream
-            });
-            var page = new Page(file);
-
-            // Act
-            var error = page.validate();
-
-            // Assert
-            error.should.not.null;
-            error.message.should.be.string("The stream is not supported.");
-        });
-
         it("should return an error when the file does not start with metadata section.", () => {
 
             // Arrange
@@ -101,23 +47,21 @@ describe("gulp-enginaer-page", () => {
             var error = page.validate();
 
             // Assert
-            expect(error).null;
+            expect(error).undefined;
         });
-    });
 
-    describe("name", () => {
-        it("should return name of the file when getting name property.", () => {
+        it("should return an error when the super class returns an error message.", () => {
 
             // Arrange
-            var expectedName = "test-file-name";
-            var file = createFile("---", expectedName + ".md");
+            var file;
             var page = new Page(file);
 
             // Act
-            var name = page.name;
+            var error = page.validate();
 
             // Assert
-            name.should.to.be.string(expectedName);
+            error.should.not.null;
+            error.message.should.be.string("The file must be provided.");
         });
     });
 
@@ -214,7 +158,7 @@ describe("gulp-enginaer-page", () => {
             page.get("permalink").should.to.be.string("./post/sample.html");
         });
 
-        it ("should ignore metadata with empty key.", () => {
+        it("should ignore metadata with empty key.", () => {
             // Arrange
             let content = `---
                 layout: page
@@ -367,51 +311,3 @@ permalink: sample.html
         });
     });
 });
-
-// Helper functions.
-
-function createFile(content, fileName) {
-    return new Vinyl({
-        cwd: "",
-        base: undefined,
-        path: fileName,
-        contents: Buffer.from(content)
-    });
-}
-
-function getContent() {
-    return `---
-layout: page
-published: true
-author: Fatih Tatoğlu
-permalink: about.html
-date: 2000-01-01 00:00:00
----
-# Heading
-
-I really like using Markdown.
-            
-I think I'll use it to format all of my documents from now on.
-
-## Heading2
-
-Curabitur malesuada, nibh eget ornare venenatis, sapien massa rutrum arcu, a euismod ex risus vel tortor. Aliquam quis posuere ligula. Integer nec euismod ante. Cras malesuada a nisi sit amet laoreet.`;
-}
-
-function getMissingMatadataContent() {
-    return `---
-layout: page
-published: true
-author: Fatih Tatoğlu
-permalink: about.html
----
-# Heading
-
-I really like using Markdown.
-            
-I think I'll use it to format all of my documents from now on.
-
-## Heading2
-
-Curabitur malesuada, nibh eget ornare venenatis, sapien massa rutrum arcu, a euismod ex risus vel tortor. Aliquam quis posuere ligula. Integer nec euismod ante. Cras malesuada a nisi sit amet laoreet.`;
-}
