@@ -5,7 +5,7 @@ require("./helper");
 const Page = require("../lib/page");
 const BasePageVisitor = require("../lib/pageVisitor");
 
-const { expect } = require("chai");
+const { expect, assert } = require("chai");
 require('chai').should();
 
 describe("gulp-enginaer-page", () => {
@@ -32,6 +32,8 @@ describe("gulp-enginaer-page", () => {
         });
 
         it("should return null when the is valid.", () => {
+
+            // Arrange
             var content = `---
             # Heading
 
@@ -89,6 +91,7 @@ describe("gulp-enginaer-page", () => {
         });
 
         it("should fill metadata Map when process the page.", () => {
+
             // Arrange
             let content = getContent();
             let file = createFile(content, "sample.md");
@@ -106,6 +109,7 @@ describe("gulp-enginaer-page", () => {
         });
 
         it("should return an error when mandatory metadata is missing.", () => {
+
             // Arrange
             let content = getMissingMatadataContent();
             let file = createFile(content, "sample.md");
@@ -121,6 +125,7 @@ describe("gulp-enginaer-page", () => {
         });
 
         it("should not return an error when process is successfully completed", function () {
+
             // Arrange
             let content = getContent();
             let file = createFile(content, "sample.md");
@@ -135,6 +140,7 @@ describe("gulp-enginaer-page", () => {
         });
 
         it("should trim metadata key when has whitespaces.", () => {
+
             // Arrange
             let content = `---
             layout: page
@@ -159,6 +165,7 @@ describe("gulp-enginaer-page", () => {
         });
 
         it("should ignore metadata with empty key.", () => {
+
             // Arrange
             let content = `---
                 layout: page
@@ -177,6 +184,22 @@ describe("gulp-enginaer-page", () => {
 
             // Assert
             page.has("").should.false;
+        });
+
+        it("should parse metadata.", () => {
+
+            // Arrange
+            let content = getContent();
+            let file = createFile(content, "sample.md");
+            let page = new Page(file);
+
+            // Act
+            page.validate();
+            page.process();
+
+            // Assert
+            Object.keys(page.metadata).should.have.lengthOf(5);
+            expect(page.metadata).keys("layout", "published", "author", "date", "permalink");
         });
     });
 
@@ -201,6 +224,7 @@ describe("gulp-enginaer-page", () => {
         }
 
         it("should add metadata when visitor accepted.", function () {
+
             // Arrange
             var content = getContent();
             var file = createFile(content, "sample.md");
@@ -220,6 +244,7 @@ describe("gulp-enginaer-page", () => {
         });
 
         it("should return error when an error occured accepting a visitor.", () => {
+
             // Arrange
             var content = getContent();
             var file = createFile(content, "sample.md");
@@ -292,8 +317,8 @@ permalink: sample.html
         ];
 
         tests.forEach(({ args, expected, name }) => {
-
             it(`should return ${expected} when the pusblied key is ${name}.`, () => {
+
                 // Arrange
                 let content = args;
 
@@ -307,7 +332,6 @@ permalink: sample.html
                 // Assert
                 page.published.should.be.equal(expected);
             });
-
         });
     });
 });

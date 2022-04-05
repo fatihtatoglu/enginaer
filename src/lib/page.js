@@ -32,10 +32,23 @@ class Page extends Resource {
     }
 
     /**
-     * @type {boolean}
+     * @returns {boolean}
      */
     get published() {
         return this.#metadata.get("published") === "true";
+    }
+
+    /**
+     * @returns {object.<string, *>}
+     */
+    get metadata() {
+        var data = {};
+
+        this.#metadata.forEach((value, key) => {
+            data[key] = value;
+        });
+
+        return data;
     }
 
     /**
@@ -69,7 +82,7 @@ class Page extends Resource {
      */
     process() {
         super.process();
-        
+
         var that = this;
 
         let rawContent = this.file.contents.toString();

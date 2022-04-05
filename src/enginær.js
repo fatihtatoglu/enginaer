@@ -4,271 +4,165 @@ const PluginError = require("plugin-error");
 
 const through = require("through2");
 const path = require("path");
+const fs = require("fs");
 const Vinyl = require("vinyl");
+const glob = require("glob");
+const dayjs = require("dayjs");
 
-const marked = require("marked");
-const mustache = require("mustache");
 const Page = require("./lib/page");
 const Template = require("./lib/template");
+const BasePageVisitor = require("./lib/pageVisitor");
+const { threadId } = require("worker_threads");
 
 const PLUGIN_NAME = "enginær";
 
 class Enginaer {
 
-    #options;
+    /**
+     * @type {object}
+     */
+    #config;
 
     /**
-     * @type {Map<string,object>}
+     * @type {object.<string, Page>}
      */
-    #pages;
-    #enrichers;
-    #templatePages;
+    #pageRegistry;
 
-    constructor() {
-        this.#enrichers = {};
+    /**
+     * @type {object.<string, Template>}
+     */
+    #templateRegistry;
+
+    /**
+     * @type {object.<string, BasePageVisitor>}
+     */
+    #visitorRegistry;
+
+    /**
+     * @type {object.<string, Function>}
+     */
+    #templatHelpers;
+
+    constructor(config) {
+        this.#config = config;
     }
 
-    get outputPath() {
-        return this.#options.get("output");
+    /**
+     * @returns {string[]}
+     */
+    get #pagePaths() {
+        var basePath = this.#config["base"];
+        var pagePath = this.#config["page"]["path"];
+
+        return this.#convertToPaths(basePath, pagePath);
     }
 
-    get assetPath() {
-        var assetConfig = this.#options.get("asset");
-        return assetConfig["path"];
+    /**
+     * @returns {string[]}
+     */
+    get #pageVisitorPaths() {
+        var basePath = this.#config["base"];
+        var visitorPath = this.#config["page"]["visitor"];
+
+        return this.#convertToPaths(basePath, visitorPath);
     }
 
-    get assetBasePath() {
-        var assetConfig = this.#options.get("asset");
-        return assetConfig["base"];
+    /**
+     * @returns {string[]}
+     */
+    get #templatePaths() {
+        var basePath = this.#config["base"];
+        var templatePath = this.#config["template"]["path"];
+
+        return this.#convertToPaths(basePath, templatePath);
     }
 
-    get pagePath() {
-        var pageConfig = this.#options.get("page");
-        return pageConfig["path"];
+    /**
+     * @returns {string[]}
+     */
+    get #templateHelpersPath() {
+        var basePath = this.#config["base"];
+        var templateHelperPath = this.#config["template"]["helpers"];
+
+        return this.#convertToPaths(basePath, templateHelperPath);
     }
 
-    get templatePath() {
-        var templateConfig = this.#options.get("template");
-        return templateConfig["path"];
-    }
+    /**
+     * @returns{object[]}
+     */
+    get #allPages() {
+        var allPages = [];
+        for (const pageName in this.#pageRegistry) {
+            /**
+             * @type {Page}
+             */
+            var page = this.#pageRegistry[pageName];
 
-    get #metadaEnrichers() {
-        return this.#getEnricher("metadata");
-    }
-
-    get #rawEnrichers() {
-        return this.#getEnricher("raw");
-    }
-
-    get #generateEnrichers() {
-        return this.#getEnricher("generate");
-    }
-
-    get #menuEnrichers() {
-        return this.#getEnricher("menu");
-    }
-
-    setOptions(options) {
-        this.#validateOption(options);
-
-        this.#options = new Map();
-
-        var that = this;
-        for (const key in options) {
-            if (that.#options.has(key)) {
-                throw new PluginError(PLUGIN_NAME, "The option has already added.");
-            }
-
-            if (key === "page") {
-                var enrichers = options[key]["enrichers"];
-
-                that.#validatePageEnrichers(enrichers);
-            }
-
-            if (key === "template") {
-                var helpers = options[key]["helpers"];
-                that.#validateTemplateHelpers(helpers);
-            }
-
-            that.#options.set(key, options[key]);
-        }
-    }
-
-    setPages() {
-        var that = this;
-
-        var markedConfig = this.#options.get("marked");
-        marked.setOptions(markedConfig);
-
-        var config = this.#options.get("config");
-
-        var menu = this.#options.get("menu") || {};
-
-        this.#pages = new Map();
-        this.#templatePages = [];
-        return through.obj((file, _encoding, cb) => {
-
-            var page = new Page(file);
-            
-
-            let error = page.validate();
-            if (error) {
-                cb(new PluginError(PLUGIN_NAME, error.message), file);
-                return;
-            }
-
-            error = page.process();
-            if (error) {
-                cb(new PluginError(PLUGIN_NAME, error.message), file);
-                return;
-            }
-
-            if (!page.published) {
-                cb(null, file);
-                return;
-            }
-
-            console.log(page);
-
-            var pageName = page.name;
-            var fileRawContent = file.contents.toString();
-            var metadata = that.#parsePageMetadata(fileRawContent);
-            var htmlContent = page.content;
-
-            that.#rawEnrichers.forEach(f => {
-                var key = f["key"];
-                var handler = f["handler"];
-
-                var value = handler.call(null, htmlContent, config);
-                metadata.set(key, value);
-            });
-
-            that.#menuEnrichers.forEach(f => {
-                var handler = f["handler"];
-
-                handler.call(null, metadata, menu, config);
-            });
-
-            that.#metadaEnrichers.forEach(f => {
-                var key = f["key"];
-                var handler = f["handler"];
-
-                if (!metadata.has(key)) {
-                    var message = "The '" + key + "' does not exist in metadata.";
-                    cb(new PluginError(PLUGIN_NAME, message), file);
-                }
-
-                var value = metadata.get(key);
-                value = handler.call(null, value, config);
-
-                metadata.set(key, value);
-            });
-
-            that.#generateEnrichers.forEach(f => {
-                var sourceKey = f["sourceKey"];
-                var targetKey = f["targetKey"];
-                var handler = f["handler"];
-
-                if (!metadata.has(sourceKey)) {
-                    var message = "The '" + sourceKey + "' does not exist in metadata.";
-                    cb(new PluginError(PLUGIN_NAME, message), file);
-                }
-
-                var value = handler.call(null, metadata.get(sourceKey), config);
-                metadata.set(targetKey, value);
-            });
-
-            that.#pages.set(pageName, {
-                "metadata": metadata,
-                "content": htmlContent
-            });
-
-            var templatePage = {
-                "name": pageName
+            var pageObject = {
+                "name": pageName,
+                ...page.metadata
             };
 
-            metadata.forEach((v, k) => {
+            allPages.push(pageObject);
+        }
 
-                if (k === "order") {
-                    v = parseInt(v);
-                }
-
-                if (k === "published") {
-                    v = v === "true" ? true : false;
-                }
-
-                templatePage[k] = v;
-            });
-
-            that.#templatePages.push(templatePage);
-            that.#templatePages.sort((a, b) => new Date(a["date"]) - new Date(b["date"]));
-
-            that.#options.set("menu", menu);
-
-            cb(null, file);
-        });
+        return allPages.sort((a, b) => new Date(a["date"]) - new Date(b["date"]));
     }
 
-    setTemplates() {
-        var templateConfig = this.#options.get("template");
-        templateConfig["cache"] = {};
+    load() {
+        this.#templateRegistry = {};
+        this.#templatHelpers = {};
+        this.#visitorRegistry = {};
+        this.#pageRegistry = {};
 
-        return through.obj((file, _encoding, cb) => {
+        this.#writeLog("The templates are loading...");
+        this.#loadTemplates();
 
-            var template = new Template(file);
+        this.#writeLog("The template helper functions are loading...");
+        this.#loadTemplateHelpers();
 
-            let error = template.validate();
-            if (error) {
-                cb(new PluginError(PLUGIN_NAME, error.message), file);
-                return;
-            }
+        this.#writeLog("The page visitors are loading...");
+        this.#loadVisitor();
 
-            template.process();
-
-            templateConfig["cache"][template.name] = template.content;
-
-            cb(null, file);
-        });
+        this.#writeLog("The pages are loading...");
+        this.#loadPages();
     }
 
     generate() {
         var that = this;
-
-        var templates = this.#options.get("template")["cache"];
-
-        var mustacheConfig = this.#options.get("template")["helpers"];
-
-        var config = this.#options.get("config");
-
         var vinylFiles = [];
-        for (const [, value] of this.#pages) {
-            var metadata = value["metadata"];
 
-            var templateData = { ...config, ...mustacheConfig };
+        // Prepare pre-defined keys.
+        var templateData = {
+            "site-language": this.#config["site-language"],
+            "site-culture": this.#config["site-culture"],
+            "site-title-prefix": this.#config["site-title-prefix"],
+            "site-name": this.#config["site-name"],
+            "base-url": this.#config["base-url"],
+            "base-path": this.#config["base-url"],
 
-            // add base url
-            var basePath = config["base-url"] || path.resolve(that.#options.get("output")) + "/";
-            templateData["base-path"] = basePath;
+            ... this.#templatHelpers
+        };
 
-            var templateName = metadata.get("layout");
-            var template = templates[templateName];
+        templateData["pages"] = this.#allPages;
 
-            // set content
-            templateData["content"] = value["content"];
+        // execute visitors.
+        for (const pageName in this.#pageRegistry) {
 
-            // set menu
-            templateData["menu"] = Object.values(that.#options.get("menu"));
-            templateData["menu"] = templateData["menu"].sort((a, b) => a["order"] - b["order"]);
+            /**
+             * @type {Page}
+             */
+            var page = that.#pageRegistry[pageName];
+            that.#writeLog(`The page \x1b[32m'${pageName}'\x1b[0m is processing.`);
 
-            // add page metadata
-            metadata.forEach((v, k) => {
-                templateData[k] = v;
-            });
+            var templateName = page.get("layout");
+            var permalink = page.get("permalink");
 
-            templateData["pages"] = that.#templatePages;
-
-            var permalink = templateData["permalink"];
-            var output = mustache.render(template, templateData, templates);
+            /**
+             * @type {Template}
+             */
+            var template = that.#templateRegistry[templateName];
+            var output = template.execute(page, templateData, that.#templateRegistry);
 
             vinylFiles.push(new Vinyl({
                 cwd: "",
@@ -288,78 +182,342 @@ class Enginaer {
 
         stream.end();
 
+        this.#writeLog("The generation process is completed.");
+        this.#writeLog("==========");
+
         return stream;
     }
 
-    #parsePageMetadata(fileRawContent) {
-        var metadataEndIndex = fileRawContent.indexOf("---", 1);
-        var metadataSection = fileRawContent.substring(4, metadataEndIndex);
+    #loadPages() {
+        var that = this;
 
-        var metadata = new Map();
-        var data = metadataSection.replace(/\r/g, "").split("\n");
-        data.forEach((item) => {
-            if (item.length === 0) {
-                return;
+        var markedConfig = this.#config["page"]["marked"];
+        this.#pagePaths.forEach((p) => {
+            that.#writeLog(`The file \x1b[31m'${p}'\x1b[0m is loading.`);
+
+            var content = fs.readFileSync(p);
+            var file = new Vinyl({
+                cwd: "",
+                base: undefined,
+                path: p,
+                contents: Buffer.from(content)
+            });
+
+            var page = new Page(file, markedConfig);
+            var error = page.validate();
+            if (error) {
+                throw new PluginError(PLUGIN_NAME, error);
             }
 
-            var kvp = item.split(": ");
-            var key = kvp[0];
-            if (key === "") {
-                return;
+            var processingError = page.process();
+            if (processingError) {
+                throw new PluginError(PLUGIN_NAME, processingError);
             }
 
-            var value = kvp[1];
+            for (const visitorName in that.#visitorRegistry) {
 
-            metadata.set(key, value);
+                /**
+                 * @type {BasePageVisitor}
+                 */
+                var visitor = that.#visitorRegistry[visitorName];
+                that.#writeLog(`The visitor \x1b[33m'${visitor.name}'\x1b[0m is applied.`);
+
+                var visitorError = page.accept(visitor);
+                if (visitorError) {
+                    throw new PluginError(PLUGIN_NAME, visitorError);
+                }
+            }
+
+            that.#pageRegistry[page.name] = page;
+
+            that.#writeLog(`The page \x1b[32m'${page.name}'\x1b[0m is ready for generation.`);
         });
 
-        return metadata;
+        that.#writeLog("==========");
     }
 
-    #getEnricher(type) {
-        if (!this.#enrichers[type]) {
-            var enrichers = this.#options.get("page")["enrichers"];
-            return enrichers.filter((e) => {
-                if (e["type"] === type) {
-                    return e;
-                }
+    #loadTemplates() {
+        var that = this;
+
+        this.#templatePaths.forEach((t) => {
+
+            that.#writeLog(`The file \x1b[31m'${t}'\x1b[0m is loading.`);
+
+            var content = fs.readFileSync(t);
+            var file = new Vinyl({
+                cwd: "",
+                base: undefined,
+                path: t,
+                contents: Buffer.from(content)
+            });
+
+            var template = new Template(file);
+            var error = template.validate();
+            if (error) {
+                throw new PluginError(PLUGIN_NAME, error);
+            }
+
+            template.process();
+
+            that.#templateRegistry[template.name] = template;
+
+            that.#writeLog(`The template \x1b[32m'${template.name}'\x1b[0m is loaded.`);
+        });
+
+        that.#writeLog("==========");
+    }
+
+    #loadVisitor() {
+        var that = this;
+
+        this.#pageVisitorPaths.forEach((v) => {
+            that.#writeLog(`The file \x1b[31m'${v}'\x1b[0m is loading.`);
+
+            var vClass = require(v);
+            var visitor = new vClass();
+
+            that.#visitorRegistry[visitor.name] = visitor;
+
+            that.#writeLog(`The page visitor \x1b[32m'${visitor.name}'\x1b[0m is loaded.`);
+        });
+
+        that.#writeLog("==========");
+    }
+
+    #loadTemplateHelpers() {
+        var that = this;
+
+        this.#templateHelpersPath.forEach((t) => {
+
+            that.#writeLog(`The file \x1b[31m'${t}'\x1b[0m is loading.`);
+
+            var helpers = require(t);
+            for (const k in helpers) {
+                that.#templatHelpers[k] = helpers[k];
+
+                that.#writeLog(`The template helper \x1b[32m'${k}'\x1b[0m is loaded.`);
+            }
+        });
+
+        that.#writeLog("==========");
+    }
+
+    #convertToPaths(basePath, config) {
+        var paths = [];
+        if (Array.isArray(config)) {
+            config.forEach((c) => {
+                Array.concat(paths, glob.sync(path.join(basePath, c)));
             });
         }
-
-        return this.#enrichers[type];
-    }
-
-    #validateOption(options) {
-        if (typeof options !== "object") {
-            throw new PluginError(PLUGIN_NAME, "The options must be an object.");
+        else if (typeof config === "string") {
+            paths = glob.sync(path.join(basePath, config));
         }
 
-        if (!options["config"]) {
-            throw new PluginError(PLUGIN_NAME, "The options must contain 'config' object.");
-        }
-
-        if (!options["config"]["base-url"]) {
-            throw new PluginError(PLUGIN_NAME, "The config object must contain 'base-url' key.");
-        }
+        return paths;
     }
 
-    #validatePageEnrichers(enrichers) {
-        enrichers.forEach((item) => {
-            var handler = item["handler"];
-            if (typeof handler !== "function") {
-                throw new PluginError(PLUGIN_NAME, "The handler of the enricher must be a function.");
-            }
-        });
+    #writeLog(message) {
+        var timestamp = dayjs(new Date()).format("HH:mm:ss");
+        console.log(`[\x1b[90m${timestamp}\x1b[0m]`, "\x1b[36m" + PLUGIN_NAME, "\x1b[0m" + message, "\x1b[0m");
     }
 
-    #validateTemplateHelpers(helpers) {
-        for (var k in helpers) {
-            var helper = helpers[k];
-            if (typeof helper !== "function") {
-                throw new PluginError(PLUGIN_NAME, "The template helper must be a function.");
-            }
-        }
-    }
+
+    // setPages() {
+    //     var that = this;
+
+    //     var markedConfig = this.#options.get("marked");
+    //     marked.setOptions(markedConfig);
+
+    //     var config = this.#options.get("config");
+
+    //     var menu = this.#options.get("menu") || {};
+
+    //     this.#pageList = new Map();
+    //     this.#templatePages = [];
+    //     return through.obj((file, _encoding, cb) => {
+
+    //         var page = new Page(file);
+
+
+    //         let error = page.validate();
+    //         if (error) {
+    //             cb(new PluginError(PLUGIN_NAME, error.message), file);
+    //             return;
+    //         }
+
+    //         error = page.process();
+    //         if (error) {
+    //             cb(new PluginError(PLUGIN_NAME, error.message), file);
+    //             return;
+    //         }
+
+    //         if (!page.published) {
+    //             cb(null, file);
+    //             return;
+    //         }
+
+    //         console.log(page);
+
+    //         var pageName = page.name;
+    //         var fileRawContent = file.contents.toString();
+    //         var metadata = that.#parsePageMetadata(fileRawContent);
+    //         var htmlContent = page.content;
+
+    //         that.#rawEnrichers.forEach(f => {
+    //             var key = f["key"];
+    //             var handler = f["handler"];
+
+    //             var value = handler.call(null, htmlContent, config);
+    //             metadata.set(key, value);
+    //         });
+
+    //         that.#menuEnrichers.forEach(f => {
+    //             var handler = f["handler"];
+
+    //             handler.call(null, metadata, menu, config);
+    //         });
+
+    //         that.#metadaEnrichers.forEach(f => {
+    //             var key = f["key"];
+    //             var handler = f["handler"];
+
+    //             if (!metadata.has(key)) {
+    //                 var message = "The '" + key + "' does not exist in metadata.";
+    //                 cb(new PluginError(PLUGIN_NAME, message), file);
+    //             }
+
+    //             var value = metadata.get(key);
+    //             value = handler.call(null, value, config);
+
+    //             metadata.set(key, value);
+    //         });
+
+    //         that.#generateEnrichers.forEach(f => {
+    //             var sourceKey = f["sourceKey"];
+    //             var targetKey = f["targetKey"];
+    //             var handler = f["handler"];
+
+    //             if (!metadata.has(sourceKey)) {
+    //                 var message = "The '" + sourceKey + "' does not exist in metadata.";
+    //                 cb(new PluginError(PLUGIN_NAME, message), file);
+    //             }
+
+    //             var value = handler.call(null, metadata.get(sourceKey), config);
+    //             metadata.set(targetKey, value);
+    //         });
+
+    //         that.#pageList.set(pageName, {
+    //             "metadata": metadata,
+    //             "content": htmlContent
+    //         });
+
+    //         var templatePage = {
+    //             "name": pageName
+    //         };
+
+    //         metadata.forEach((v, k) => {
+
+    //             if (k === "order") {
+    //                 v = parseInt(v);
+    //             }
+
+    //             if (k === "published") {
+    //                 v = v === "true" ? true : false;
+    //             }
+
+    //             templatePage[k] = v;
+    //         });
+
+    //         that.#templatePages.push(templatePage);
+    //         that.#templatePages.sort((a, b) => new Date(a["date"]) - new Date(b["date"]));
+
+    //         that.#options.set("menu", menu);
+
+    //         cb(null, file);
+    //     });
+    // }
+
+    // setTemplates() {
+    //     var templateConfig = this.#options.get("template");
+    //     templateConfig["cache"] = {};
+
+    //     return through.obj((file, _encoding, cb) => {
+
+    //         var template = new Template(file);
+
+    //         let error = template.validate();
+    //         if (error) {
+    //             cb(new PluginError(PLUGIN_NAME, error.message), file);
+    //             return;
+    //         }
+
+    //         template.process();
+
+    //         templateConfig["cache"][template.name] = template.content;
+
+    //         cb(null, file);
+    //     });
+    // }
+
+    // oldGenerate() {
+    //     var that = this;
+
+    //     var templates = this.#options.get("template")["cache"];
+
+    //     var mustacheConfig = this.#options.get("template")["helpers"];
+
+    //     var config = this.#options.get("config");
+
+    //     var vinylFiles = [];
+    //     for (const [, value] of this.#pageList) {
+    //         var metadata = value["metadata"];
+
+    //         var templateData = { ...config, ...mustacheConfig };
+
+    //         // add base url
+    //         var basePath = config["base-url"] || path.resolve(that.#options.get("output")) + "/";
+    //         templateData["base-path"] = basePath;
+
+    //         var templateName = metadata.get("layout");
+    //         var template = templates[templateName];
+
+    //         // set content
+    //         templateData["content"] = value["content"];
+
+    //         // set menu
+    //         templateData["menu"] = Object.values(that.#options.get("menu"));
+    //         templateData["menu"] = templateData["menu"].sort((a, b) => a["order"] - b["order"]);
+
+    //         // add page metadata
+    //         metadata.forEach((v, k) => {
+    //             templateData[k] = v;
+    //         });
+
+    //         templateData["pages"] = that.#templatePages;
+
+    //         var permalink = templateData["permalink"];
+    //         var output = mustache.render(template, templateData, templates);
+
+    //         vinylFiles.push(new Vinyl({
+    //             cwd: "",
+    //             base: undefined,
+    //             path: permalink,
+    //             contents: Buffer.from(output)
+    //         }));
+    //     }
+
+    //     var stream = through.obj((file, _encoding, cb) => {
+    //         cb(null, file);
+    //     });
+
+    //     vinylFiles.forEach((vinylFile) => {
+    //         stream.write(vinylFile);
+    //     });
+
+    //     stream.end();
+
+    //     return stream;
+    // }
 }
 
-module.exports = new Enginaer();
+module.exports = Enginaer;

@@ -9,7 +9,7 @@ function cleanAll() {
 }
 
 function copyLibrary() {
-    return src(["enginær.js", "package.json"])
+    return src(["enginær.js", "package.json", "./lib/**/*.js"], { base: "." })
         .pipe(dest(outputPath));
 }
 

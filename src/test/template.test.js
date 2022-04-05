@@ -5,6 +5,7 @@ require("./helper");
 const Template = require("../lib/template");
 
 const { expect } = require("chai");
+const Page = require("../lib/page");
 require('chai').should();
 
 describe("gulp-enginaer-template", () => {
@@ -75,13 +76,93 @@ describe("gulp-enginaer-template", () => {
 
             var file = createFile(expectedContent, "template.mustache");
             var template = new Template(file);
+            template.validate();
 
             // Act
-            template.validate();
             template.process();
 
             // Assert
             template.content.should.equal(expectedContent);
+        });
+    });
+
+    describe("execute", () => {
+        it("should return template output when is executed.", () => {
+
+            // Arrange
+            var pageContent = `---
+layout: page
+permalink: test.html
+published: true
+author: Fatih Tatoğlu
+date: 2000-01-01
+---
+# Heading 
+
+Sample content.`;
+            var pageFile = createFile(pageContent, "page.md");
+            var page = new Page(pageFile);
+            page.validate();
+            page.process();
+
+            var templateContent = "{{& content}} <h2>Names</h2><ul>{{#list}}<li>{{name}}</li>{{/list}}</ul>";
+            var templateContentFile = createFile(templateContent, "template.mustache");
+            var template = new Template(templateContentFile);
+            template.validate();
+            template.process();
+
+            // Act
+            var output = template.execute(page, {
+                "list": [{ "name": "Fatih" }, { "name": "John" }]
+            });
+
+            // Assert
+            output.should.be.string(`<h1>Heading</h1>
+<p>Sample content.</p>
+ <h2>Names</h2><ul><li>Fatih</li><li>John</li></ul>`);
+        });
+
+        it("should return template output when executed with partial template.", () => {
+
+            // Arrange
+            var pageContent = `---
+layout: post
+permalink: sample.html
+published: true
+author: Fatih Tatoğlu
+date: 2000-01-03
+---
+# Sample 
+
+Lorem ipsum sit amet.`;
+            var pageFile = createFile(pageContent, "page2.md");
+            var page = new Page(pageFile);
+            page.validate();
+            page.process();
+
+            var templateContent = `<h2>Names</h2>{{#list}}{{> _user}}{{/list}}{{& content}}`;
+            var templateContentFile = createFile(templateContent, "template_partial.mustache");
+            var template = new Template(templateContentFile);
+            template.validate();
+            template.process();
+
+            var partialTemplateContent = "<strong>{{name}}</strong>";
+            var partialTemplateContentFile = createFile(partialTemplateContent, "_user.mustache");
+            var partialTemplate = new Template(partialTemplateContentFile);
+            partialTemplate.validate();
+            partialTemplate.process();
+
+            // Act
+            var output = template.execute(page, {
+                "list": [{ "name": "Fatih" }, { "name": "John" }]
+            }, {
+                "_user": partialTemplate
+            });
+
+            // Assert
+            output.should.be.string(`<h2>Names</h2><strong>Fatih</strong><strong>John</strong><h1>Sample</h1>
+<p>Lorem ipsum sit amet.</p>
+`);
         });
     });
 });
