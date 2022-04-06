@@ -44,7 +44,7 @@ module.exports = {
             }
         });
 
-        posts.children = posts.children.sort((a, b) => { return new Date(a["date"]) - new Date(b["date"]); });
+        posts.children.sort((a, b) => { return new Date(a["date"]) - new Date(b["date"]); });
         menu.push(posts);
 
         return menu.sort((a, b) => a["order"] - b["order"]);
