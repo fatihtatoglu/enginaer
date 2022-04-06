@@ -13,9 +13,9 @@ class DateVisitor extends BasePageVisitor {
         var date = new Date(Date.parse(dateString));
 
         page.set("date", date);
-        // page.set("publish-date", date.toISOString());
-        // page.set("publish-date-localformat", date.toLocaleDateString("en-US"));
-        // page.set("publish-date-title", date.toString("en-US"));
+        page.set("publish-date", date.toISOString());
+        page.set("publish-date-localformat", date.toLocaleDateString("en-US"));
+        page.set("publish-date-title", date.toString("en-US"));
     }
 }
 

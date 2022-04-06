@@ -193,7 +193,7 @@ class Enginaer {
 
         var markedConfig = this.#config["page"]["marked"];
         this.#pagePaths.forEach((p) => {
-            that.#writeLog(`The file \x1b[31m'${p}'\x1b[0m is loading.`);
+            that.#writeLog(`The file \x1b[35m'${p}'\x1b[0m is loading.`);
 
             var content = fs.readFileSync(p);
             var file = new Vinyl({
@@ -241,7 +241,7 @@ class Enginaer {
 
         this.#templatePaths.forEach((t) => {
 
-            that.#writeLog(`The file \x1b[31m'${t}'\x1b[0m is loading.`);
+            that.#writeLog(`The file \x1b[35m'${t}'\x1b[0m is loading.`);
 
             var content = fs.readFileSync(t);
             var file = new Vinyl({
@@ -271,7 +271,7 @@ class Enginaer {
         var that = this;
 
         this.#pageVisitorPaths.forEach((v) => {
-            that.#writeLog(`The file \x1b[31m'${v}'\x1b[0m is loading.`);
+            that.#writeLog(`The file \x1b[35m'${v}'\x1b[0m is loading.`);
 
             var vClass = require(v);
             var visitor = new vClass();
@@ -289,7 +289,7 @@ class Enginaer {
 
         this.#templateHelpersPath.forEach((t) => {
 
-            that.#writeLog(`The file \x1b[31m'${t}'\x1b[0m is loading.`);
+            that.#writeLog(`The file \x1b[35m'${t}'\x1b[0m is loading.`);
 
             var helpers = require(t);
             for (const k in helpers) {
