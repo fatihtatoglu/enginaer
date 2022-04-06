@@ -18,7 +18,7 @@ describe("gulp-enginaer-pageVisitor", () => {
 
         // Act & Assert
         assert.throws(() => {
-            new BasePageVisitor();
+            var _ = new BasePageVisitor();
         }, Error, "The name is required for page visitor!");
     });
 
