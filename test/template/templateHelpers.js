@@ -48,5 +48,45 @@ module.exports = {
         menu.push(posts);
 
         return menu.sort((a, b) => a["order"] - b["order"]);
+    },
+    "tagList": function () {
+        var tags = [];
+
+        this.pages.forEach((page) => {
+            page.tags.forEach((t) => {
+
+                var index = tags.findIndex((v, i) => {
+                    if (v["tag"] === t) {
+                        return i;
+                    }
+                });
+
+                if (index === -1) {
+                    var tag = {
+                        "tag": t,
+                        "list": [{
+                            "name": page["name"],
+                            "title": page["title"],
+                            "url": page["permalink"],
+                            "date": page["date"],
+                            "published": page["published"]
+                        }]
+                    };
+
+                    tags.push(tag);
+                }
+                else {
+                    tags[index]["list"].push({
+                        "name": page["name"],
+                        "title": page["title"],
+                        "url": page["permalink"],
+                        "date": page["date"],
+                        "published": page["published"]
+                    });
+                }
+            });
+        });
+
+        return tags;
     }
 };
