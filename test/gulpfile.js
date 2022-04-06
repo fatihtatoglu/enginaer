@@ -26,54 +26,6 @@ const config = {
     "base-url": "https://blog.tatoglu.net/enginaer/"
 };
 
-
-// {
-//     "type": "menu",
-//     "handler": function (metadata, menu) {
-//         var layout = metadata.get("layout");
-//         var title = metadata.get("title");
-//         if (layout === "page") {
-//             var menuItem = {
-//                 "title": title,
-//                 "url": metadata.get("permalink"),
-//                 "order": metadata.get("order")
-//             };
-//             if (metadata.get("published") !== "true") {
-//                 menuItem["disabled"] = true;
-//                 delete menuItem["url"];
-//             }
-//             menu[title] = menuItem;
-//         }
-//     }
-// },
-// {
-//     "type": "menu",
-//     "handler": function (metadata, menu, _config) {
-//         var posts = menu["posts"] || {
-//             "title": "Posts",
-//             "children": [],
-//             "order": 9999
-//         };
-//         var layout = metadata.get("layout");
-//         if (layout === "post") {
-//             var menuItem = {
-//                 "title": metadata.get("title"),
-//                 "url": metadata.get("permalink"),
-//                 "date": metadata.get("date")
-//             };
-//             if (metadata.get("published") !== "true") {
-//                 menuItem["disabled"] = true;
-//                 delete menuItem["url"];
-//             }
-//             posts["children"].push(menuItem);
-//             posts["children"] = posts["children"].sort(function (a, b) {
-//                 return new Date(a["date"]) - new Date(b["date"]);
-//             });
-//             menu["posts"] = posts;
-//         }
-//     }
-// }
-
 // Gulp Step 1 - Clean old files.
 function cleanAll() {
     return src(outputPath, { allowEmpty: true })
