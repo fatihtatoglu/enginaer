@@ -2,7 +2,7 @@
 
 require("./helper");
 
-const Enginar = require("../enginær");
+const Enginaer = require("../enginær");
 
 const { expect, assert } = require("chai");
 require('chai').should();
@@ -18,7 +18,7 @@ describe("gulp-enginaer", () => {
 
             // Act & Assert
             assert.throws(() => {
-                new Enginar(config);
+                var _ = new Enginaer(config);
             }, Error, "The config must be provided!");
         });
 
@@ -29,7 +29,7 @@ describe("gulp-enginaer", () => {
 
             // Act & Assert
             assert.throws(() => {
-                new Enginar(config);
+                var _ = new Enginaer(config);
             }, Error, "The one of the mandatory key is missing in the config.");
         });
 
@@ -49,7 +49,7 @@ describe("gulp-enginaer", () => {
 
             // Act & Assert
             assert.throws(() => {
-                new Enginar(config);
+                var _ = new Enginaer(config);
             }, Error, "The page config must have 'path' key!");
         });
 
@@ -71,7 +71,7 @@ describe("gulp-enginaer", () => {
 
             // Act & Assert
             assert.throws(() => {
-                new Enginar(config);
+                var _ = new Enginaer(config);
             }, Error, "The template config must have 'path' key!");
         });
     });
