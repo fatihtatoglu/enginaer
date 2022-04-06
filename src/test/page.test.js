@@ -211,7 +211,7 @@ describe("gulp-enginaer-page", () => {
                 super("title")
             }
 
-            #regex = /<h1\s*.*>(.*)<\/h1>/g;
+            #regex = /<h1\s*.{0,128}>(.*)<\/h1>/g;
 
             visit(page) {
                 var value = this.#regex.exec(page.content);
