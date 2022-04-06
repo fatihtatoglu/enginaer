@@ -15,11 +15,10 @@ describe("gulp-enginaer", () => {
 
             // Arrange
             var config;
-            var enginaer;
 
             // Act & Assert
             assert.throws(() => {
-                enginaer = new Enginar(config);
+                new Enginar(config);
             }, Error, "The config must be provided!");
         });
 
@@ -27,11 +26,10 @@ describe("gulp-enginaer", () => {
 
             // Arrange
             var config = {};
-            var enginaer;
 
             // Act & Assert
             assert.throws(() => {
-                enginaer = new Enginar(config);
+                new Enginar(config);
             }, Error, "The one of the mandatory key is missing in the config.");
         });
 
@@ -48,11 +46,10 @@ describe("gulp-enginaer", () => {
                 "page": {},
                 "template": {}
             };
-            var enginaer;
 
             // Act & Assert
             assert.throws(() => {
-                enginaer = new Enginar(config);
+                new Enginar(config);
             }, Error, "The page config must have 'path' key!");
         });
 
@@ -71,11 +68,10 @@ describe("gulp-enginaer", () => {
                 },
                 "template": {}
             };
-            var enginaer;
 
             // Act & Assert
             assert.throws(() => {
-                enginaer = new Enginar(config);
+                new Enginar(config);
             }, Error, "The template config must have 'path' key!");
         });
     });
