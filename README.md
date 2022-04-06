@@ -4,9 +4,9 @@ Enginær is a simple **static** website engine.
 
 ## Motivation
 
-While developing, my motivation has been to easily publish a new post or a new page, like sending a new commit message to a git repository. In addition, I wanted to develop my Turbo C blog theme.
+While developing, my motivation has been to easily publish a new post or a new page, like sending a new commit message to a git repository.
 
-I like writing blogs, but I cannot take any time. I know writing markdown is so easy and also the markdown document has a human-readable structure. Moreover, markdown documents also support many components that using in HTML documents is not easy such as tables, images, and lists.
+I like writing blogs, but I cannot have enough time. I know writing markdown is so easy and also the markdown document has a human-readable structure. Moreover, markdown documents also support many components that using in HTML documents is not easy such as tables, images, and lists.
 
 ![Publish Test Project](https://github.com/fatihtatoglu/enginaer/actions/workflows/test.yml/badge.svg
 ) [![HitCount](https://hits.dwyl.com/fatihtatoglu/enginaer.svg?style=flat-square&show=unique)](http://hits.dwyl.com/fatihtatoglu/enginaer) ![GitHub top language](https://img.shields.io/github/languages/top/fatihtatoglu/enginaer) ![GitHub](https://img.shields.io/github/license/fatihtatoglu/enginaer) ![npm](https://img.shields.io/npm/v/enginaer)
@@ -17,7 +17,7 @@ Creating a blog engine there are some challenges. The first one is to create an 
 
 Apart from all of the other challenges, executing operations in parallel or serial order I need to develop an automated pipeline system. **`gulp`** is a flexible and repetitive system. I selected **`gulp`** and the main part of the project stands a gulp plugin.
 
-![gulp](docs/gulp.png "gulp") ![markdown](docs/markdown.png "markdown") ![markedjs](docs/markedjs.png "markedjs") ![mustache](docs/mustache.png "mustache") ![nodejs](docs/nodejs.png "nodejs") ![github actions](docs/actions.png "github actions")
+![gulp](docs/gulp.png "gulp") ![markdown](docs/markdown.png "markdown") ![markedjs](docs/markedjs.png "markedjs") ![mustache](docs/mustache.png "mustache") ![NodeJs](docs/nodejs.png "NodeJs") ![Github Actions](docs/actions.png "Github Actions") ![SonarCloud](docs/sonarcloud.png "SonarCloud") ![Glob](docs/glob.png "Glob")
 
 ## Usage
 
@@ -36,221 +36,164 @@ First of all import all required references.
 ```js
 const { series, parallel, src, dest } = require("gulp");
 const clean = require("gulp-clean");
-const replace = require("gulp-replace");
 const enginær = require("enginaer");
 ```
 
-### Set Options
+### Configuration
 
-Then to set options the `setOprions` method can be used. The example options are below.
+The configuration is very basic and user friendly.
 
 ```js
-enginær.setOptions({
-    "output": "../dist/",
-
-    "asset": {
-        "base": "./assets/",
-        "path": [
-            "./assets/css/*.css",
-            "./assets/js/*.js",
-            "./assets/img/*.png",
-            "./assets/img/*.jpg"
-        ]
-    },
-
+const config = {
+    "base": __dirname,
     "page": {
         "path": "./page/**/*.md",
-        "enrichers": [
-            {
-                "key": "title",
-                "type": "raw",
-                "handler": function (fileRawContent) {
-                    var titleRegex = /<h1>(.*)<\/h1>/g;
-                    var titleResult = titleRegex.exec(fileRawContent);
-
-                    return titleResult[1];
-                }
-            },
-            {
-                "key": "tags",
-                "type": "metadata",
-                "handler": function (value) {
-                    return value.split().map(v => {
-                        return v.replace(/\_/g, " ");
-                    });
-                }
-            },
-            {
-                "key": "date",
-                "type": "metadata",
-                "handler": function (value) {
-                    return new Date(Date.parse(value));
-                }
-            },
-            {
-                "sourceKey": "date",
-                "targetKey": "publish-date",
-                "type": "generate",
-                "handler": function (date) {
-                    return date.toISOString();
-                }
-            },
-            {
-                "type": "menu",
-                "handler": function (metadata, menu) {
-
-                    var layout = metadata.get("layout");
-                    var title = metadata.get("title");
-                    if (layout === "page") {
-                        var menuItem = {
-                            "title": title,
-                            "url": metadata.get("permalink"),
-                            "order": metadata.get("order")
-                        };
-
-                        if (metadata.get("published") !== "true") {
-                            menuItem["disabled"] = true;
-                            delete menuItem["url"];
-                        }
-
-                        menu[title] = menuItem;
-                    }
-                }
-            }
-        ]
-    },
-
-    "template": {
-        "path": "./template/*.mustache",
-        "helpers": {
-            "separator": function () {
-                return this.role === "separator";
-            },
-            "hasChildren": function () {
-                return this.children && this.children.length > 0;
-            },
-            "url": function () {
-                if (this.url) {
-                    return this.url;
-                }
-
-                return "javascript:;";
-            }
+        "visitor": "./page/**/*Visitor.js",
+        "marked": {
+            breaks: true,
+            smartLists: true,
+            headerIds: false
         }
     },
-
-    "config": {
-        "site-language": "en",
-        "site-culture": "en-US",
-        "site-title-prefix": "Enginær - ",
-        "site-name": "Enginær Demo",
-        "base-url": "https://blog.tatoglu.net/enginaer/"
+    "template": {
+        "path": "./template/*.mustache",
+        "helpers": "./template/templateHelpers.js"
     },
-
-    "marked": {
-        breaks: true,
-        smartLists: true,
-        headerIds: false
-    }
-});
+    "site-language": "en",
+    "site-culture": "en-US",
+    "site-title-prefix": "Enginær - ",
+    "site-name": "Enginær Demo",
+    "base-url": "https://blog.tatoglu.net/enginaer/"
+};
 ```
 
-#### Attribute Description
+#### Configuration Description
 
-| Attribute | |  | Description | Type |
-| :---: | :---: | :---: | :--- | :-- |
-| **output** | | | The output folder path | string |
-| **asset** | | | The asset object | object |
-| | ***base*** | | The base asset folder path | string |
-| | ***path*** | | The assets paths. | string, string[] |
-| **page** | | | The page object | object |
-| | ***path*** | | The page folders paths | string, string[] |
-| | ***enrichers*** | | The enricher array | object[] |
-| | | *key* | Name of the result object | string |
-| | | *type* | Type of the enricher | enum: raw, metadata, generate, menu |
-| | | *handler* | The enricher function | Function |
-| | | *sourceKey* | The name of the source metadata value. This key is used on in ***generate*** type. | string |
-| | | *targetKey* | The name of the target metadata. This key is used on in ***generate*** type. | string |
-| **template** | | | The template object | object |
-| | ***path*** | | The templates paths | string, string[] |
-| | ***helpers*** | | The render helper function of the templates | pair<string, Function> |
-| **config** | | | The config object | object |
-| | ***site-language*** | | The website language | string |
-| | ***site-culture*** | | The website culture. This property is also used for date formatting. | string |
-| | ***site-title-prefix*** | | The website title prefix | string |
-| | ***site-name*** | | The name of the website | string |
-| | ***base-url*** | | The website base url | string |
-| **marked** | | | The marked configuration. Reference: [markedJS Options](https://marked.js.org/using_advanced#options) | object |
+| Attribute | | Description | Type |
+| :--- | :---: | :--- | :-- |
+| **base** | | The base path of the resources. Usually you can set *__dirname*. | string |
+| **page** | | The page object | object |
+| | ***path*** | The page folders paths. | glob |
+| | ***visitor*** | The page visitors paths.  | glob |
+| | ***marked*** | The marked configuration. Reference: [markedJS Options](https://marked.js.org/using_advanced#options) | object |
+| **template** | | The template object. | object |
+| | ***path*** | The templates paths. | glob |
+| | ***helpers*** | The render helper functions paths. | glob |
+| **site-language** | | The website language. | string |
+| **site-culture** | | The website culture. This property is also used for date formatting. | string |
+| **site-title-prefix** | | The website title prefix. | string |
+| **site-name** | | The name of the website. | string |
+| **base-url** | | The website base url. | string |
 
-> The string properties are supported [glob](https://gulpjs.com/docs/en/getting-started/explaining-globs/) data type.
+For more details about [glob](https://gulpjs.com/docs/en/getting-started/explaining-globs/) data type.
 
-### Gulp Steps
+### Execution Steps
 
-The last step for using is defining gulp steps. The below steps are the simple example.
+After defining the configuration, there are there main steps.
+
+#### Initialization
 
 ```js
+var enginær = new Enginaer(config);
+```
+
+In this step, the engine is initialized. While initilization, if the engine is faced any invalid or missing configuration, will throw an exception.
+
+#### Loading Resources
+
+```js
+enginær.load();
+```
+
+This step is required for loading mandatory resources validation and processing in the engine. While loading resources engine could throw any exceptions, if the resource is not valid.
+
+The loading steps work in the following order.
+
+1. Templates
+2. Template Helpers
+3. Page Visitors
+4. Pages
+
+#### Generation
+
+```js
+enginær.generate();
+```
+
+At the end, the engine is ready to generate web site pages.
+
+### Sample Gulpfile
+
+For putting all execution step together the sample gulp file is below.
+
+```js
+const outputPath = "../dist/";
+
 // Gulp Step 1 - Clean old files.
 function cleanAll() {
-    return src([enginær.outputPath], { allowEmpty: true })
+    return src(outputPath, { allowEmpty: true })
         .pipe(clean({ force: true }));
 }
 
 // Gulp Step 2 - Copy all required assets.
 function copyAssets() {
-    return src(enginær.assetPath, { base: enginær.assetBasePath })
-        .pipe(dest(enginær.outputPath));
+    return src(["./assets/css/*.css",
+        "./assets/js/*.js",
+        "./assets/img/*.png",
+        "./assets/img/*.jpg"], { base: "./assets/" })
+        .pipe(dest(outputPath));
 }
 
-// Gulp Step 3 - Add Pages
-function loadPages() {
-    return src(enginær.pagePath)
-        .pipe(enginær.setPages());
-}
-
-// Gulp Step 4 - Add Templates
-function loadTemplates() {
-    return src(enginær.templatePath)
-        .pipe(enginær.setTemplates());
-}
-
-// Gulp Step 5 - Generate Output
+// Gulp Step 3 - Enginær
 function generate() {
+
+    // Initialize enginær engine.
+    var enginær = new Enginaer(config);
+
+    // load required resources (templates, template helpers, pages, and page visitors.)
+    enginær.load();
+
+    // Generate web site pages.
     return enginær.generate()
-        .pipe(replace("<h1>", "<header><h1>"))
-        .pipe(replace("</h1>", "</h1></header>"))
-        .pipe(replace(/..\/assets\/img\//g, "./img/"))
-        .pipe(dest("../dist/"));
+        .pipe(dest(outputPath));
 }
 
 exports.default = series(
     cleanAll,
-
-    parallel(copyAssets, loadPages, loadTemplates),
-
-    generate
+    parallel(copyAssets, generate)
 );
 ```
 
-#### Customize Pipeline
+## Customization
 
 The `enginær.generate` method return file stream. If you want to customize the output, you should add new pipe steps.
 
-The other customization options are `page.enrichers` and `template.helpers`.
+The other customization options are `Page Visitors` and `Template Helpers`.
 
-##### page.enrichers
+### Page Visitors
 
-This customization step provides adding new key-value pair in the page metadata. The handler function parameters can be changed by type.
+This customization step provides adding new key-value pair in the page metadata. The page visitors are applied for all pages after loading and for each page object.
 
-| Enricher Type | Function Signature | Return Value | Execution Order | Stage |
-| :---: | :--- | :--- | :---: | :---: |
-| raw | `function(htmlContent, config)` | any | 1 | setPage |
-| menu | `function(metadata, menu, config)` | - | 2 | setPage |
-| metadata | `function(value, config)` | any | 3 | generate |
-| generate | `function(sourceValue, config)` | any | 4 | generate |
+The page visitor must be extend from `BasePageVisitor` class.
 
-##### template.helpers
+```js
+class BasePageVisitor {
+    name: string;
+    visit(page:Page):Error | undefined;
+}
+```
 
-This customization step provides helpers for rendering mustache templates.
+#### Template Helpers
+
+This customization step provides helpers for rendering mustache templates. There is one restriction that must be returns an object such as the below example.
+
+```js
+module.exports = {
+    "helper-name": function () {
+        return "sample-code";
+    }
+};
+```
 
 ## Execute
 
