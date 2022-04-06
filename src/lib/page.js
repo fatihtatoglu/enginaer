@@ -111,7 +111,7 @@ class Page extends Resource {
         });
 
         if (!this.#checkMetadata()) {
-            return new Error("The mandatory metadata is missing.");
+            return new Error("The mandatory metadata is missing. ['layout', 'published', 'author', 'date', 'permalink'] must be provided!");
         }
     }
 

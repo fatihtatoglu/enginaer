@@ -5,7 +5,7 @@ require("./helper");
 const Page = require("../lib/page");
 const BasePageVisitor = require("../lib/pageVisitor");
 
-const { expect, assert } = require("chai");
+const { expect } = require("chai");
 require('chai').should();
 
 describe("gulp-enginaer-page", () => {
@@ -31,7 +31,7 @@ describe("gulp-enginaer-page", () => {
             error.message.should.be.string("The file must be started with metadata section.");
         });
 
-        it("should return null when the is valid.", () => {
+        it("should return undefined when the is valid.", () => {
 
             // Arrange
             var content = `---
@@ -207,6 +207,10 @@ describe("gulp-enginaer-page", () => {
 
         class TitleVisitor extends BasePageVisitor {
 
+            constructor() {
+                super("title")
+            }
+
             #regex = /<h1\s*.*>(.*)<\/h1>/g;
 
             visit(page) {
@@ -218,6 +222,10 @@ describe("gulp-enginaer-page", () => {
         }
 
         class ErrorVisitor extends BasePageVisitor {
+            constructor() {
+                super("error")
+            }
+
             visit(_page) {
                 return new Error("Test error.");
             }

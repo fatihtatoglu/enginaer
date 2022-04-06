@@ -43,6 +43,10 @@ class Enginaer {
     #templatHelpers;
 
     constructor(config) {
+        this.#validateConfig(config);
+        this.#validatePageConfig(config);
+        this.#validateTemplateConfig(config);
+
         this.#config = config;
     }
 
@@ -317,6 +321,39 @@ class Enginaer {
         }
 
         return paths;
+    }
+
+    #validateConfig(config) {
+        if (!config) {
+            throw new Error("The config must be provided!");
+        }
+
+        const mandatoryKeys = ["base", "page", "template", "site-language", "site-culture", "site-title-prefix", "site-name", "base-url"];
+
+        var result = true;
+        mandatoryKeys.forEach((key) => {
+            if (!result) {
+                return;
+            }
+
+            result = config[key] !== undefined;
+        });
+
+        if (!result) {
+            throw new Error("The one of the mandatory key is missing in the config. The mandatory keys: ['base', 'page', 'template', 'site-language', 'site-culture', 'site-title-prefix', 'site-name', 'base-url'].");
+        }
+    }
+
+    #validatePageConfig(config) {
+        if (!config["page"]["path"]) {
+            throw new Error("The page config must have 'path' key!");
+        }
+    }
+
+    #validateTemplateConfig(config) {
+        if (!config["template"]["path"]) {
+            throw new Error("The template config must have 'path' key!");
+        }
     }
 
     #writeLog(message) {

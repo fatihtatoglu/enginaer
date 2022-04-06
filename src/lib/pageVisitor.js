@@ -1,5 +1,10 @@
 "use strict";
 
+const Page = require("./page");
+
+/**
+ * @interface
+ */
 class BasePageVisitor {
 
     /**
@@ -8,6 +13,11 @@ class BasePageVisitor {
     #name;
 
     constructor(name) {
+
+        if (!name) {
+            throw new Error("The name is required for page visitor!");
+        }
+
         this.#name = name;
     }
 
@@ -24,7 +34,11 @@ class BasePageVisitor {
      * @returns {Error | undefined}
      */
     visit(page) {
-        return undefined;
+        if (!page || !(page instanceof Page)) {
+            return new Error("The page object must be provided!");
+        }
+
+        return;
     }
 }
 
