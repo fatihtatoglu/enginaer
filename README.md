@@ -9,7 +9,7 @@ While developing, my motivation has been to easily publish a new post or a new p
 I like writing blogs, but I cannot have enough time. I know writing markdown is so easy and also the markdown document has a human-readable structure. Moreover, markdown documents also support many components that using in HTML documents is not easy such as tables, images, and lists.
 
 ![Publish Test Project](https://github.com/fatihtatoglu/enginaer/actions/workflows/test.yml/badge.svg
-) [![HitCount](https://hits.dwyl.com/fatihtatoglu/enginaer.svg?style=flat-square&show=unique)](http://hits.dwyl.com/fatihtatoglu/enginaer) ![GitHub top language](https://img.shields.io/github/languages/top/fatihtatoglu/enginaer) ![GitHub](https://img.shields.io/github/license/fatihtatoglu/enginaer) ![npm](https://img.shields.io/npm/v/enginaer)
+) [![HitCount](https://hits.dwyl.com/fatihtatoglu/enginaer.svg?style=flat-square&show=unique)](http://hits.dwyl.com/fatihtatoglu/enginaer) ![GitHub top language](https://img.shields.io/github/languages/top/fatihtatoglu/enginaer) ![GitHub](https://img.shields.io/github/license/fatihtatoglu/enginaer) ![npm](https://img.shields.io/npm/v/enginaer) [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=fatihtatoglu_enginaer&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=fatihtatoglu_enginaer) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=fatihtatoglu_enginaer&metric=bugs)](https://sonarcloud.io/summary/new_code?id=fatihtatoglu_enginaer) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=fatihtatoglu_enginaer&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=fatihtatoglu_enginaer)
 
 ## Challenges
 
