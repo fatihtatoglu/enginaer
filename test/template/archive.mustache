@@ -45,6 +45,18 @@
 
             {{/pages}}
 
+            <h2>Tags</h2>
+            {{#tagList}}
+                <h3>{{tag}}</h3>
+                <ul>
+                {{#list}}
+                    {{#published}}
+                    <li><a href="{{& url}}">{{title}}</a></li>
+                    {{/published}}
+                {{/list}}
+                </ul>
+            {{/tagList}}
+
         </article>
     </main>
     <footer>{{> _footer}}</footer>
