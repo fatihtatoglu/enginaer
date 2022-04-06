@@ -12,6 +12,7 @@ const dayjs = require("dayjs");
 const Page = require("./lib/page");
 const Template = require("./lib/template");
 const BasePageVisitor = require("./lib/pageVisitor");
+const PathHelper = require("./lib/pathHelper");
 
 const PLUGIN_NAME = "enginær";
 
@@ -42,12 +43,19 @@ class Enginaer {
      */
     #templatHelpers;
 
+    /**
+     * @type {PathHelper}
+     */
+    #pathHelper;
+
     constructor(config) {
         this.#validateConfig(config);
         this.#validatePageConfig(config);
         this.#validateTemplateConfig(config);
 
         this.#config = config;
+
+        this.#pathHelper = new PathHelper();
     }
 
     /**
@@ -57,7 +65,7 @@ class Enginaer {
         var basePath = this.#config["base"];
         var pagePath = this.#config["page"]["path"];
 
-        return this.#convertToPaths(basePath, pagePath);
+        return this.#pathHelper.toPath(basePath, pagePath);
     }
 
     /**
@@ -67,7 +75,7 @@ class Enginaer {
         var basePath = this.#config["base"];
         var visitorPath = this.#config["page"]["visitor"];
 
-        return this.#convertToPaths(basePath, visitorPath);
+        return this.#pathHelper.toPath(basePath, visitorPath);
     }
 
     /**
@@ -77,7 +85,7 @@ class Enginaer {
         var basePath = this.#config["base"];
         var templatePath = this.#config["template"]["path"];
 
-        return this.#convertToPaths(basePath, templatePath);
+        return this.#pathHelper.toPath(basePath, templatePath);
     }
 
     /**
@@ -87,7 +95,7 @@ class Enginaer {
         var basePath = this.#config["base"];
         var templateHelperPath = this.#config["template"]["helpers"];
 
-        return this.#convertToPaths(basePath, templateHelperPath);
+        return this.#pathHelper.toPath(basePath, templateHelperPath);
     }
 
     /**
@@ -307,20 +315,6 @@ class Enginaer {
         });
 
         that.#writeLog("==========");
-    }
-
-    #convertToPaths(basePath, config) {
-        var paths = [];
-        if (Array.isArray(config)) {
-            config.forEach((c) => {
-                Array.concat(paths, glob.sync(path.join(basePath, c)));
-            });
-        }
-        else if (typeof config === "string") {
-            paths = glob.sync(path.join(basePath, config));
-        }
-
-        return paths;
     }
 
     #validateConfig(config) {
