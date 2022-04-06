@@ -15,11 +15,10 @@ describe("gulp-enginaer-pageVisitor", () => {
     it("should throw an exception when initialize without name", () => {
 
         // Arrange
-        var visitor;
 
         // Act & Assert
         assert.throws(() => {
-            visitor = new BasePageVisitor();
+            new BasePageVisitor();
         }, Error, "The name is required for page visitor!");
     });
 
