@@ -37,8 +37,6 @@ class BasePageVisitor {
         if (!page || !(page instanceof Page)) {
             return new Error("The page object must be provided!");
         }
-
-        return;
     }
 }
 
