@@ -1,6 +1,6 @@
 {
   "name": "enginaer",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "A simple web site engine with javascript.",
   "repository": {
     "type": "git",
@@ -22,7 +22,9 @@
     "vinyl": "^2.2.1",
     "plugin-error": "^1.0.1",
     "glob": "^7.2.0",
-    "dayjs": "^1.11.0"
+    "dayjs": "^1.11.0",
+    "unset-value": "^2.0.1",
+    "glob-parent": "^6.0.2"
   },
   "main": "enginær.js",
   "devDependencies": {
