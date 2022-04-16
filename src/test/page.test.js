@@ -198,8 +198,8 @@ describe("gulp-enginaer-page", () => {
             page.process();
 
             // Assert
-            Object.keys(page.metadata).should.have.lengthOf(5);
-            expect(page.metadata).keys("layout", "published", "author", "date", "permalink");
+            Object.keys(page.metadata).should.have.lengthOf(6);
+            expect(page.metadata).keys("layout", "published", "author", "date", "permalink", "language");
         });
     });
 

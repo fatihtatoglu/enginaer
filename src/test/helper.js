@@ -17,7 +17,8 @@ layout: page
 published: true
 author: Fatih Tatoğlu
 permalink: about.html
-date: 2000-01-01 00:00:00
+date: 2000-01-01 00:00:00,
+language: tr
 ---
 # Heading
 

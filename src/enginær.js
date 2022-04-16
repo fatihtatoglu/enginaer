@@ -322,7 +322,7 @@ class Enginaer {
             throw new Error("The config must be provided!");
         }
 
-        const mandatoryKeys = ["base", "page", "template", "site-language", "site-culture", "site-title-prefix", "site-name", "base-url"];
+        const mandatoryKeys = ["base", "page", "template", "site-title-prefix", "site-name", "base-url"];
 
         var result = true;
         mandatoryKeys.forEach((key) => {
@@ -334,7 +334,7 @@ class Enginaer {
         });
 
         if (!result) {
-            throw new Error("The one of the mandatory key is missing in the config. The mandatory keys: ['base', 'page', 'template', 'site-language', 'site-culture', 'site-title-prefix', 'site-name', 'base-url'].");
+            throw new Error("The one of the mandatory key is missing in the config. The mandatory keys: ['base', 'page', 'template', 'site-title-prefix', 'site-name', 'base-url'].");
         }
     }
 

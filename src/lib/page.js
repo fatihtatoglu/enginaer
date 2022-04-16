@@ -111,7 +111,7 @@ class Page extends Resource {
         });
 
         if (!this.#checkMetadata()) {
-            return new Error("The mandatory metadata is missing. ['layout', 'published', 'author', 'date', 'permalink'] must be provided!");
+            return new Error("The mandatory metadata is missing. ['layout', 'published', 'author', 'date', 'permalink', 'language'] must be provided!");
         }
     }
 
@@ -145,7 +145,7 @@ class Page extends Resource {
      */
     #checkMetadata() {
         var that = this;
-        const mandatoryKeys = ["layout", "published", "author", "date", "permalink"];
+        const mandatoryKeys = ["layout", "published", "author", "date", "permalink", "language"];
 
         var result = true;
         mandatoryKeys.forEach((key) => {

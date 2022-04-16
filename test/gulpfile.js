@@ -19,8 +19,6 @@ const config = {
         "path": "./template/*.mustache",
         "helpers": "./template/templateHelpers.js"
     },
-    "site-language": "en",
-    "site-culture": "en-US",
     "site-title-prefix": "Enginær - ",
     "site-name": "Enginær Demo",
     "base-url": "https://blog.tatoglu.net/enginaer/"

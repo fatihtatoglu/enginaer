@@ -38,8 +38,6 @@ describe("gulp-enginaer", () => {
             // Arrange
             var config = {
                 "base": __dirname,
-                "site-language": "en",
-                "site-culture": "en-US",
                 "site-title-prefix": "Enginær - ",
                 "site-name": "Enginær Demo",
                 "base-url": "https://blog.tatoglu.net/enginaer/",
@@ -58,8 +56,6 @@ describe("gulp-enginaer", () => {
             // Arrange
             var config = {
                 "base": __dirname,
-                "site-language": "en",
-                "site-culture": "en-US",
                 "site-title-prefix": "Enginær - ",
                 "site-name": "Enginær Demo",
                 "base-url": "https://blog.tatoglu.net/enginaer/",

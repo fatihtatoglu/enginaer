@@ -59,8 +59,6 @@ const config = {
         "path": "./template/*.mustache",
         "helpers": "./template/templateHelpers.js"
     },
-    "site-language": "en",
-    "site-culture": "en-US",
     "site-title-prefix": "Enginær - ",
     "site-name": "Enginær Demo",
     "base-url": "https://blog.tatoglu.net/enginaer/"
@@ -79,8 +77,6 @@ const config = {
 | **template** | | The template object. | object |
 | | ***path*** | The templates paths. | glob |
 | | ***helpers*** | The render helper functions paths. | glob |
-| **site-language** | | The website language. | string |
-| **site-culture** | | The website culture. This property is also used for date formatting. | string |
 | **site-title-prefix** | | The website title prefix. | string |
 | **site-name** | | The name of the website. | string |
 | **base-url** | | The website base url. | string |

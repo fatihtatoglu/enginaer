@@ -34,8 +34,6 @@ describe("gulp-enginaer-pathHelper", () => {
         // Act
         var result = pathHelper.toPath(basePath, globPath);
 
-        console.log(result);
-
         // Arrange
         result.should.not.empty;
         result.should.contains("../test/page/about.md");
