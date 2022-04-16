@@ -11,6 +11,8 @@ tags: tag_1 tag_2 tag_3
 
 # Post
 
+![Image](../../assets/img/blank-book.jpg)
+
 Praesent quis magna tempor, consectetur dui at, mollis nulla. Nulla vitae nibh massa. Quisque finibus eu dui sit amet porttitor. Donec et turpis tempus, tincidunt libero at, facilisis risus. Phasellus a cursus lacus. Duis aliquam arcu nisi. Nam quam elit, euismod cursus tristique a, finibus eget purus.
 
 Donec eget massa sodales, malesuada metus ut, condimentum magna. Aliquam at finibus diam. Nunc ullamcorper ex in libero pharetra, consequat ultricies orci maximus. Morbi at dui metus. Donec placerat aliquet venenatis. Duis ac placerat eros. Suspendisse ornare, leo vel interdum ultricies, nisl massa cursus arcu, sit amet gravida erat quam sit amet tellus. Vivamus tortor leo, pharetra non ornare et, tincidunt eu libero. Curabitur at nunc sed est finibus volutpat eu in mi. Integer vehicula odio velit, ac molestie libero rhoncus in. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Quisque feugiat neque mauris, convallis finibus nisi tempor vel. Aliquam vitae massa eget dui suscipit pretium. Nullam rutrum, arcu sed auctor egestas, augue risus eleifend ipsum, gravida feugiat nulla sem at diam. Proin luctus, quam vel viverra bibendum, ipsum ex tempor risus, eget fringilla risus elit eu purus.

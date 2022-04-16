@@ -11,6 +11,8 @@ tags: tag_1 tag_2 tag_3
 
 # Mesaj 1
 
+![Image](../assets/img/blank-book.jpg)
+
 Umut gazete balıkhaneye patlıcan biber. Mutlu oldular lakin uzattı layıkıyla de gazete gazete hesap makinesi tv göze çarpan. Bahar bilgiyasayarı koşuyorlar dışarı çıktılar uzattı karşıdakine kapının kulu ekşili çorba hesap makinesi şafak öyle ki sandalye. Adanaya şafak tv gülüyorum hesap makinesi batarya kutusu sandalye sarmal açılmadan dolayı batarya kutusu yapacakmış layıkıyla gülüyorum. Değerli olduğu için düşünüyor gül un değirmeni umut çobanın gül hesap makinesi domates balıkhaneye gazete şafak balıkhaneye. Mıknatıslı okuma sayfası çakıl domates dergi cesurca yaptı sıla göze çarpan hesap makinesi masaya doğru şafak bilgisayarı layıkıyla bahar. Nedirnedemek Türkçe Lorem İpsum.
 
 Un değirmeni gördüm ekşili çorba öyle ki sarmal açılmadan dolayı türemiş sıfat biber uzattı telefonu kapının kulu. Lambadaki teldeki yapacakmış bilgisayarı lakin balıkhaneye otobüs sarmal açılmadan dolayı patlıcan salladı değerli olduğu için sarmal açılmadan dolayı salladı. Otobüs bahar gitti bahar koştum ona doğru biber dışarı çıktılar beğendim umut. Yazın gidecekmiş lambadaki yapacakmış layıkıyla. Ona doğru şafak bilgisayarı sıradanlıktan hesap makinesi. Nedirnedemek Türkçe Lorem İpsum.

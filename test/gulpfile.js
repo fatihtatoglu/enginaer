@@ -57,7 +57,8 @@ function generate() {
     return enginær.generate()
         .pipe(replace("<h1>", "<header><h1>"))
         .pipe(replace("</h1>", "</h1></header>"))
-        .pipe(replace(/..\/assets\/img\//g, "./img/"))
+        .pipe(replace(/..\/..\/assets\/img\//g, "img/"))
+        .pipe(replace(/..\/assets\/img\//g, "img/"))
         .pipe(dest(outputPath));
 }
 
