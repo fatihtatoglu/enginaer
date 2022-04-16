@@ -226,6 +226,10 @@ class Enginaer {
                 throw new PluginError(PLUGIN_NAME, processingError);
             }
 
+            if (!page.published) {
+                return;
+            }
+
             for (const visitorName in that.#visitorRegistry) {
 
                 /**
