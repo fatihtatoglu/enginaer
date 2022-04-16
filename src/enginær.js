@@ -149,12 +149,9 @@ class Enginaer {
 
         // Prepare pre-defined keys.
         var templateData = {
-            "site-language": this.#config["site-language"],
-            "site-culture": this.#config["site-culture"],
             "site-title-prefix": this.#config["site-title-prefix"],
             "site-name": this.#config["site-name"],
             "base-url": this.#config["base-url"],
-            "base-path": this.#config["base-url"],
 
             ... this.#templatHelpers
         };
