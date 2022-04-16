@@ -1,12 +1,10 @@
 "use strict";
 
 const PluginError = require("plugin-error");
+const Vinyl = require("vinyl");
 
 const through = require("through2");
-const path = require("path");
 const fs = require("fs");
-const Vinyl = require("vinyl");
-const glob = require("glob");
 const dayjs = require("dayjs");
 
 const Page = require("./lib/page");
@@ -98,28 +96,6 @@ class Enginaer {
         return this.#pathHelper.toPath(basePath, templateHelperPath);
     }
 
-    /**
-     * @returns{object[]}
-     */
-    get #allPages() {
-        var allPages = [];
-        for (const pageName in this.#pageRegistry) {
-            /**
-             * @type {Page}
-             */
-            var page = this.#pageRegistry[pageName];
-
-            var pageObject = {
-                "name": pageName,
-                ...page.metadata
-            };
-
-            allPages.push(pageObject);
-        }
-
-        return allPages.sort((a, b) => new Date(a["date"]) - new Date(b["date"]));
-    }
-
     load() {
         this.#templateRegistry = {};
         this.#templatHelpers = {};
@@ -156,32 +132,52 @@ class Enginaer {
             ... this.#templatHelpers
         };
 
-        templateData["pages"] = this.#allPages;
-
-        // execute visitors.
+        var pages = {};
         for (const pageName in this.#pageRegistry) {
 
             /**
              * @type {Page}
              */
-            var page = that.#pageRegistry[pageName];
-            that.#writeLog(`The page \x1b[32m'${pageName}'\x1b[0m is processing.`);
+            var item = that.#pageRegistry[pageName];
 
-            var templateName = page.get("layout");
-            var permalink = page.get("permalink");
+            if (!pages[item.get("language")]) {
+                pages[item.get("language")] = [];
+            }
+
+            pages[item.get("language")].push(item);
+        }
+
+        for (const lang in pages) {
+
+            that.#writeLog(`\x1b[33m'${lang}'\x1b[0m is processing.`);
 
             /**
-             * @type {Template}
+             * @type {Array.<object>}
              */
-            var template = that.#templateRegistry[templateName];
-            var output = template.execute(page, templateData, that.#templateRegistry);
+            var list = pages[lang];
 
-            vinylFiles.push(new Vinyl({
-                cwd: "",
-                base: undefined,
-                path: permalink,
-                contents: Buffer.from(output)
-            }));
+            templateData["pages"] = this.#allPages(list);
+
+            list.forEach((page) => {
+                var pageName = page.name;
+                that.#writeLog(`The page \x1b[32m'${pageName}'\x1b[0m is processing.`);
+
+                var templateName = page.get("layout");
+                var permalink = page.get("permalink");
+
+                /**
+                 * @type {Template}
+                 */
+                var template = that.#templateRegistry[templateName];
+                var output = template.execute(page, templateData, that.#templateRegistry);
+
+                vinylFiles.push(new Vinyl({
+                    cwd: "",
+                    base: undefined,
+                    path: permalink,
+                    contents: Buffer.from(output)
+                }));
+            });
         }
 
         var stream = through.obj((file, _encoding, cb) => {
@@ -349,6 +345,31 @@ class Enginaer {
         if (!config["template"]["path"]) {
             throw new Error("The template config must have 'path' key!");
         }
+    }
+
+    /**
+     * @returns{object[]}
+     */
+    #allPages(pages) {
+        var that = this;
+
+        var allPages = [];
+        for (const key in pages) {
+            /**
+             * @type {Page}
+             */
+            var page = pages[key];
+            var pageName = page.name;
+
+            var pageObject = {
+                "name": pageName,
+                ...page.metadata,
+                "base-url": that.#config["base-url"]
+            };
+
+            allPages.push(pageObject);
+        }
+        return allPages.sort((a, b) => new Date(a["date"]) - new Date(b["date"]));
     }
 
     #writeLog(message) {

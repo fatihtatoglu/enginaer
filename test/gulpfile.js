@@ -3,11 +3,21 @@ const clean = require("gulp-clean");
 const replace = require("gulp-replace");
 const Enginaer = require("enginaer");
 
+const os = require("os");
+
+var baseUrl;
+if (os.platform() === "win32") {
+    baseUrl = "http://localhost:8080/";
+}
+else {
+    baseUrl = "https://blog.tatoglu.net/enginaer/";
+}
+
 const outputPath = "../dist/";
 const config = {
     "base": __dirname,
     "page": {
-        "path": "./page/**/*.md",
+        "path": ["./page/**/*.md", "./post/**/*.md"],
         "visitor": "./page/**/*Visitor.js",
         "marked": {
             breaks: true,
@@ -21,7 +31,7 @@ const config = {
     },
     "site-title-prefix": "Enginær - ",
     "site-name": "Enginær Demo",
-    "base-url": "https://blog.tatoglu.net/enginaer/"
+    "base-url": baseUrl
 };
 
 // Gulp Step 1 - Clean old files.

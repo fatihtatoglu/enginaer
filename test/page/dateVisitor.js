@@ -14,8 +14,14 @@ class DateVisitor extends BasePageVisitor {
 
         page.set("date", date);
         page.set("publish-date", date.toISOString());
-        page.set("publish-date-localformat", date.toLocaleDateString("en-US"));
-        page.set("publish-date-title", date.toString("en-US"));
+
+        if (page["language"] === "tr") {
+            page.set("publish-date-localformat", date.toLocaleDateString("tr-TR"));
+            page.set("publish-date-title", date.toString("tr-TR"));
+        } else if (page["language"] === "en") {
+            page.set("publish-date-localformat", date.toLocaleDateString("en-US"));
+            page.set("publish-date-title", date.toString("en-US"));
+        }
     }
 }
 

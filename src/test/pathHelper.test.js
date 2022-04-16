@@ -19,9 +19,10 @@ describe("gulp-enginaer-pathHelper", () => {
 
         // Arrange
         result.should.not.empty;
-        result.should.have.lengthOf(7);
-        result.should.contains("../test/page/about.md");
-        result.should.contains("../test/page/sample-post.md");
+        result.should.have.lengthOf(3);
+        result.should.contains("../test/page/about.tr.md");
+        result.should.contains("../test/page/index.tr.md");
+        result.should.contains("../test/page/pages_test.tr.md");
     });
 
     it("should resolve path of the give glob array.", () => {
@@ -36,13 +37,9 @@ describe("gulp-enginaer-pathHelper", () => {
 
         // Arrange
         result.should.not.empty;
-        result.should.contains("../test/page/about.md");
-        result.should.contains("../test/page/degisim_basliyor.md");
-        result.should.contains("../test/page/index.md");
-        result.should.contains("../test/page/intro.md");
-        result.should.contains("../test/page/kendime-notlar.md");
-        result.should.contains("../test/page/pages_test.md");
-        result.should.contains("../test/page/sample-post.md");
+        result.should.contains("../test/page/about.tr.md");
+        result.should.contains("../test/page/index.tr.md");
+        result.should.contains("../test/page/pages_test.tr.md");
         result.should.contains("../test/template/_footer.mustache");
         result.should.contains("../test/template/_menu.mustache");
         result.should.contains("../test/template/archive.mustache");

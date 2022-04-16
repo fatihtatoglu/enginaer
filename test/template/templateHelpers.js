@@ -25,7 +25,7 @@ module.exports = {
         this.pages.forEach((page) => {
             let menuItem = {
                 "title": page["title"],
-                "url": page["permalink"],
+                "url": page["base-url"] + page["permalink"].replace("./", ""),
                 "order": page["order"],
                 "date": page["date"]
             };
@@ -53,6 +53,10 @@ module.exports = {
         var tags = [];
 
         this.pages.forEach((page) => {
+            if (!page.tags) {
+                return;
+            }
+
             page.tags.forEach((t) => {
 
                 var index = tags.findIndex((v, i) => {
