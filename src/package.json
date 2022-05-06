@@ -21,7 +21,9 @@
     "vinyl": "^2.2.1",
     "plugin-error": "^1.0.1",
     "glob": "^7.2.0",
-    "dayjs": "^1.11.0"
+    "dayjs": "^1.11.0",
+    "unset-value": "^2.0.1",
+    "glob-parent": "^6.0.2"
   },
   "main": "enginær.js",
   "devDependencies": {
@@ -37,5 +39,9 @@
     "test": "mocha --reporter mocha-sonarqube-reporter test/*.js --reporter-options output=testresult.xml",
     "test-cli": "mocha test/*.js",
     "coverage": "nyc --reporter=lcov --reporter=text-lcov npm test"
+  },
+  "overrides": {
+    "unset-value": "$unset-value",
+    "glob-parent": "$glob-parent"
   }
 }
