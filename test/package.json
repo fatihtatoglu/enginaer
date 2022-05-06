@@ -8,6 +8,8 @@
         "gulp": "^4.0.2",
         "gulp-clean": "^0.4.0",
         "gulp-replace": "^1.1.3",
-        "enginaer": "../src/"
+        "enginaer": "../src/",
+        "unset-value": "2.0.1",
+        "glob-parent": "6.0.2"
     }
 }
