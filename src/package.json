@@ -20,7 +20,7 @@
     "through2": "^4.0.2",
     "vinyl": "^2.2.1",
     "plugin-error": "^1.0.1",
-    "glob": "^7.2.0",
+    "glob": "^9.0.0",
     "dayjs": "^1.11.0",
     "unset-value": "^2.0.1",
     "glob-parent": "^6.0.2"
