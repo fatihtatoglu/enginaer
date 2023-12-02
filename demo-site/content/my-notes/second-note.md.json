@@ -1,0 +1,11 @@
+{
+    "date": "2023-12-02 22:47:00",
+    "slug": "second-note",
+    "header": "İkinci Not",
+    "description": "Bu ikinci nottur.",
+    "template": "page",
+    "en": {
+        "header": "Second Note",
+        "description": "This is the second note."
+    }
+}

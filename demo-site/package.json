@@ -1,0 +1,17 @@
+{
+    "name": "demo-site",
+    "version": "1.0.0",
+    "description": "This is a demo site for testing and showing enginaer static site generator capabilities.",
+    "author": {
+        "name": "Fatih Tatoğlu",
+        "email": "fatih@tatoglu.net",
+        "url": "https://blog.tatoglu.net"
+    },
+    "license": "MIT",
+    "main": "_.js",
+    "devDependencies": {
+        "gulp": "^4.0.2",
+        "gulp-clean": "^0.4.0",
+        "enginaer": "../src/"
+    }
+}

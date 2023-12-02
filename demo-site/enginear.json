@@ -1,0 +1,10 @@
+{
+    "site": {
+        "title-prefix": "Enginær - ",
+        "name": "Enginær Demo",
+        "language": "tr",
+        "slogan": "Just a new static website generator!",
+        "copyright": "&copy; 1985 - Fatih Tatoğlu",
+        "url": "http://localhost:5500"
+    }
+}
