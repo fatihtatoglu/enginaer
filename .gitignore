@@ -354,3 +354,4 @@ dist/
 npm/
 coverage/
 .nyc_output/
+notes.txt
